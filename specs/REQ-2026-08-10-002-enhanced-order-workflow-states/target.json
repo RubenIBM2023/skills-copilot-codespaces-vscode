@@ -1,0 +1,12 @@
+{
+  "req_id": "REQ-2026-08-10-002-enhanced-order-workflow-states",
+  "project": "spring-crud-ms",
+  "branch_prefix": "opencode/swarm",
+  "created": "2026-08-10T14:35:00Z",
+  "author": "human-operator",
+  "title": "Enhanced Order Workflow: Agregar 4 nuevos estados intermedios (PAYMENT_PENDING, PAYMENT_CONFIRMED, PROCESSING, READY_FOR_SHIPMENT)",
+  "description": "Expandir el flujo de trabajo de órdenes con estados adicionales para mejor granularidad en el seguimiento del negocio",
+  "predecessor_req": "REQ-2026-08-08-001-spring-crud-ms",
+  "version": "1.1.0-SNAPSHOT",
+  "priority": "high"
+}
