@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Pedidos - Seguimiento y Facturación</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
+            border: none;
+            background: #e0e0e0;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .tab-btn:hover {
+            background: #764ba2;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #764ba2;
+        }
+
+        .btn-success {
+            background: #4caf50;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a049;
+        }
+
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #da190b;
+        }
+
+        .btn-info {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background: #0b7dda;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .status-badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-shipped {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+        .status-delivered {
+            background: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #842029;
+        }
+
+        .order-timeline {
+            margin-top: 30px;
+            position: relative;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ddd;
+            border: 3px solid white;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+        }
+
+        .timeline-dot.completed {
+            background: #4caf50;
+        }
+
+        .timeline-dot.pending {
+            background: #ffc107;
+        }
+
+        .timeline-line {
+            position: absolute;
+            width: 2px;
+            height: 60px;
+            background: #ddd;
+            left: 50%;
+            top: 30px;
+            transform: translateX(-50%);
+        }
+
+        .timeline-content {
+            width: 45%;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-content:nth-child(odd) {
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .timeline-content:nth-child(even) {
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .timeline-content h4 {
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .items-list {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                min-width: 100%;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #667eea;
+        }
+
+        .close-btn {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📦 Sistema de Seguimiento de Pedidos</h1>
+            <p>Gestiona tus productos, crea pedidos y realiza seguimiento en tiempo real</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('productos')">📦 Productos</button>
+            <button class="tab-btn" onclick="switchTab('crear-pedido')">➕ Crear Pedido</button>
+            <button class="tab-btn" onclick="switchTab('mis-pedidos')">📋 Mis Pedidos</button>
+            <button class="tab-btn" onclick="switchTab('seguimiento')">🚚 Seguimiento</button>
+            <button class="tab-btn" onclick="switchTab('facturas')">📄 Facturas</button>
+        </div>
+
+        <!-- TAB: PRODUCTOS -->
+        <div id="productos" class="tab-content active">
+            <div class="card">
+                <h2>➕ Crear / Editar Producto</h2>
+                <div id="successMessageProducts" class="message success"></div>
+                <div id="errorMessageProducts" class="message error"></div>
+                
+                <form id="productForm">
+                    <div class="grid-2">
+                        <div>
+                            <div class="form-group">
+                                <label for="productName">Nombre *</label>
+                                <input type="text" id="productName" required maxlength="100" placeholder="Ej: Laptop Dell">
+                            </div>
+                            <div class="form-group">
+                                <label for="productPrice">Precio *</label>
+                                <input type="number" id="productPrice" required min="0" step="0.01" placeholder="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="productStock">Stock *</label>
+                                <input type="number" id="productStock" required min="0" placeholder="100">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="form-group">
+                                <label for="productDescription">Descripción</label>
+                                <textarea id="productDescription" maxlength="500" placeholder="Descripción del producto" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="productCategory">Categoría *</label>
+                                <select id="productCategory" required>
+                                    <option value="">Selecciona una categoría</option>
+                                    <option value="Electrónica">Electrónica</option>
+                                    <option value="Ropa">Ropa</option>
+                                    <option value="Alimentos">Alimentos</option>
+                                    <option value="Libros">Libros</option>
+                                    <option value="Otros">Otros</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">💾 Guardar Producto</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>📊 Catálogo de Productos</h2>
+                <div id="productsContainer"></div>
+            </div>
+        </div>
+
+        <!-- TAB: CREAR PEDIDO -->
+        <div id="crear-pedido" class="tab-content">
+            <div class="card">
+                <h2>➕ Crear Nuevo Pedido</h2>
+                <div id="successMessageOrder" class="message success"></div>
+                <div id="errorMessageOrder" class="message error"></div>
+                
+                <form id="orderForm">
+                    <h3>Información del Cliente</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="orderCustomerName">Nombre Completo *</label>
+                            <input type="text" id="orderCustomerName" required placeholder="Juan Pérez">
+                        </div>
+                        <div class="form-group">
+                            <label for="orderCustomerEmail">Email *</label>
+                            <input type="email" id="orderCustomerEmail" required placeholder="juan@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="orderCustomerPhone">Teléfono *</label>
+                            <input type="tel" id="orderCustomerPhone" required placeholder="555-1234567">
+                        </div>
+                    </div>
+
+                    <h3>Dirección de Envío</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="orderAddress">Dirección *</label>
+                            <input type="text" id="orderAddress" required placeholder="Calle 123 Apt 45">
+                        </div>
+                        <div class="form-group">
+                            <label for="orderCity">Ciudad *</label>
+                            <input type="text" id="orderCity" required placeholder="México">
+                        </div>
+                        <div class="form-group">
+                            <label for="orderState">Estado/Provincia *</label>
+                            <input type="text" id="orderState" required placeholder="CDMX">
+                        </div>
+                        <div class="form-group">
+                            <label for="orderZipCode">Código Postal *</label>
+                            <input type="text" id="orderZipCode" required placeholder="06600">
+                        </div>
+                    </div>
+
+                    <h3>Productos del Pedido</h3>
+                    <div id="orderItemsContainer"></div>
+                    <button type="button" class="btn-info" onclick="addOrderItem()">➕ Agregar Producto</button>
+
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3>Total del Pedido</h3>
+                        <h2 style="color: #667eea;">$<span id="orderTotal">0.00</span></h2>
+                    </div>
+
+                    <button type="submit" class="btn-success">📦 Crear Pedido</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB: MIS PEDIDOS -->
+        <div id="mis-pedidos" class="tab-content">
+            <div class="card">
+                <h2>📋 Mis Pedidos</h2>
+                <div id="ordersTableContainer"></div>
+            </div>
+        </div>
+
+        <!-- TAB: SEGUIMIENTO -->
+        <div id="seguimiento" class="tab-content">
+            <div class="card">
+                <h2>🚚 Seguimiento de Pedidos</h2>
+                <div class="form-group" style="max-width: 400px;">
+                    <label for="trackingSearch">Número de Pedido o Tracking:</label>
+                    <input type="text" id="trackingSearch" placeholder="Ej: ORD-1234567890">
+                    <button type="button" class="btn-primary" onclick="searchTracking()" style="margin-top: 10px; width: 100%;">🔍 Buscar</button>
+                </div>
+                <div id="trackingResultContainer"></div>
+            </div>
+        </div>
+
+        <!-- TAB: FACTURAS -->
+        <div id="facturas" class="tab-content">
+            <div class="card">
+                <h2>📄 Facturas</h2>
+                <div id="invoicesTableContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles de pedido -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Detalles del Pedido</h2>
+                <button class="close-btn" onclick="closeModal('orderDetailsModal')">&times;</button>
+            </div>
+            <div id="orderDetailsContent"></div>
+            <button type="button" class="btn-primary" onclick="closeModal('orderDetailsModal')" style="margin-top: 20px; width: 100%;">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        const API_PRODUCTS = 'http://localhost:8080/api/v1/products';
+        const API_ORDERS = 'http://localhost:8080/orders';
+        const API_SHIPMENTS = 'http://localhost:8080/shipments';
+        const API_INVOICES = 'http://localhost:8080/invoices';
+
+        let orderItems = [];
+        let selectedProducts = [];
+
+        // ============ SWITCH TABS ============
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Deactivate all buttons
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Activate selected button
+            event.target.classList.add('active');
+
+            // Load data based on tab
+            if (tabName === 'mis-pedidos') {
+                loadOrders();
+            } else if (tabName === 'seguimiento') {
+                // Initialize search form
+            } else if (tabName === 'facturas') {
+                loadInvoices();
+            }
+        }
+
+        // ============ PRODUCTOS ============
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('productName').value,
+                description: document.getElementById('productDescription').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                stock: parseInt(document.getElementById('productStock').value),
+                category: document.getElementById('productCategory').value
+            };
+
+            try {
+                const response = await fetch(`${API_PRODUCTS}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    showMessage('✅ Producto guardado exitosamente', 'successMessageProducts');
+                    document.getElementById('productForm').reset();
+                    loadProducts();
+                } else {
+                    showMessage('❌ Error al guardar producto', 'errorMessageProducts');
+                }
+            } catch (error) {
+                showMessage('❌ Error: ' + error.message, 'errorMessageProducts');
+            }
+        });
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_PRODUCTS}?size=100`);
+                const data = await response.json();
+                const products = data.content || []; // Page response retorna en 'content'
+
+                let html = '<table>';
+                html += '<thead><tr><th>Nombre</th><th>Descripción</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr></thead>';
+                html += '<tbody>';
+
+                products.forEach(p => {
+                    const stockClass = p.stock > 20 ? 'status-confirmed' : p.stock > 5 ? 'status-pending' : 'status-cancelled';
+                    html += `
+                        <tr>
+                            <td><strong>${escapeHtml(p.name)}</strong></td>
+                            <td>${escapeHtml(p.description || 'N/A')}</td>
+                            <td>$${p.price.toFixed(2)}</td>
+                            <td><span class="status-badge ${stockClass}">${p.stock} unidades</span></td>
+                            <td>${p.category}</td>
+                            <td>
+                                <button class="btn-info" onclick="addProductToOrder('${p.id}', '${escapeHtml(p.name)}', ${p.price}, ${p.stock})">Agregar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                if (products.length === 0) {
+                    html = '<p>No hay productos registrados. ¡Crea uno primero!</p>';
+                }
+                document.getElementById('productsContainer').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('productsContainer').innerHTML = '<p style="color: red;">Error al cargar productos</p>';
+            }
+        }
+
+        // ============ CREAR PEDIDO ============
+        function addProductToOrder(productId, productName, price, stock) {
+            if (stock <= 0) {
+                alert('❌ Producto sin stock');
+                return;
+            }
+
+            const itemHtml = `
+                <div class="items-list" id="item-${productId}">
+                    <div class="item-row">
+                        <strong>${productName} - $${price.toFixed(2)}</strong>
+                        <div>
+                            <input type="number" value="1" min="1" max="${stock}" onchange="updateOrderTotal()" class="quantity-input" style="width: 60px;">
+                            <button type="button" class="btn-danger" onclick="removeOrderItem('${productId}')" style="margin-left: 10px;">❌</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const existingItem = document.getElementById(`item-${productId}`);
+            if (existingItem) {
+                alert('Este producto ya está en el pedido');
+                return;
+            }
+
+            orderItems.push({ productId, productName, price, stock });
+            document.getElementById('orderItemsContainer').insertAdjacentHTML('beforeend', itemHtml);
+            updateOrderTotal();
+        }
+
+        function removeOrderItem(productId) {
+            document.getElementById(`item-${productId}`).remove();
+            orderItems = orderItems.filter(item => item.productId !== productId);
+            updateOrderTotal();
+        }
+
+        function updateOrderTotal() {
+            let total = 0;
+            document.querySelectorAll('.quantity-input').forEach((input, index) => {
+                if (orderItems[index]) {
+                    total += orderItems[index].price * parseInt(input.value);
+                }
+            });
+            document.getElementById('orderTotal').textContent = total.toFixed(2);
+        }
+
+        function addOrderItem() {
+            switchTab('productos');
+            alert('Selecciona un producto de la lista para agregarlo al pedido');
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (orderItems.length === 0) {
+                showMessage('❌ Debes agregar al menos un producto', 'errorMessageOrder');
+                return;
+            }
+
+            const items = [];
+            let totalAmount = 0;
+
+            document.querySelectorAll('.quantity-input').forEach((input, index) => {
+                const quantity = parseInt(input.value);
+                const item = orderItems[index];
+                const subtotal = item.price * quantity;
+
+                items.push({
+                    productId: item.productId,
+                    productName: item.productName,
+                    productPrice: item.price,
+                    quantity: quantity
+                });
+
+                totalAmount += subtotal;
+            });
+
+            const orderData = {
+                customerName: document.getElementById('orderCustomerName').value,
+                customerEmail: document.getElementById('orderCustomerEmail').value,
+                customerPhone: document.getElementById('orderCustomerPhone').value,
+                shippingAddress: document.getElementById('orderAddress').value,
+                city: document.getElementById('orderCity').value,
+                state: document.getElementById('orderState').value,
+                zipCode: document.getElementById('orderZipCode').value,
+                items: items
+            };
+
+            try {
+                const response = await fetch(`${API_ORDERS}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (response.ok) {
+                    const order = await response.json();
+                    showMessage(`✅ Pedido ${order.orderNumber} creado exitosamente`, 'successMessageOrder');
+                    document.getElementById('orderForm').reset();
+                    document.getElementById('orderItemsContainer').innerHTML = '';
+                    orderItems = [];
+                    document.getElementById('orderTotal').textContent = '0.00';
+                } else {
+                    showMessage('❌ Error al crear pedido', 'errorMessageOrder');
+                }
+            } catch (error) {
+                showMessage('❌ Error: ' + error.message, 'errorMessageOrder');
+            }
+        });
+
+        // ============ MIS PEDIDOS ============
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_ORDERS}`);
+                const orders = await response.json();
+
+                let html = '<table>';
+                html += '<thead><tr><th>Número de Pedido</th><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr></thead>';
+                html += '<tbody>';
+
+                orders.forEach(order => {
+                    const statusClass = `status-${order.status.toLowerCase()}`;
+                    html += `
+                        <tr>
+                            <td><strong>${order.orderNumber}</strong></td>
+                            <td>${order.customerName}</td>
+                            <td>$${order.totalAmount.toFixed(2)}</td>
+                            <td><span class="status-badge ${statusClass}">${order.status}</span></td>
+                            <td>${new Date(order.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn-info" onclick="showOrderDetails(${order.id})">Ver</button>
+                                <button class="btn-success" onclick="generateInvoice(${order.id})">Facturar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                if (orders.length === 0) {
+                    html = '<p>No hay pedidos registrados</p>';
+                }
+                document.getElementById('ordersTableContainer').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading orders:', error);
+            }
+        }
+
+        async function showOrderDetails(orderId) {
+            try {
+                const response = await fetch(`${API_ORDERS}/${orderId}`);
+                const order = await response.json();
+
+                let html = `
+                    <div>
+                        <h3>📦 Pedido: ${order.orderNumber}</h3>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <p><strong>Cliente:</strong> ${order.customerName}</p>
+                            <p><strong>Email:</strong> ${order.customerEmail}</p>
+                            <p><strong>Teléfono:</strong> ${order.customerPhone}</p>
+                            <p><strong>Dirección:</strong> ${order.shippingAddress}, ${order.city}, ${order.state} ${order.zipCode}</p>
+                            <p><strong>Estado:</strong> <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></p>
+                            <p><strong>Total:</strong> $${order.totalAmount.toFixed(2)}</p>
+                            <p><strong>Fecha:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                        </div>
+
+                        <h4>🛠️ Cambiar Estado del Pedido</h4>
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn-info" onclick="updateOrderStatus(${orderId}, 'CONFIRMED')">✓ Confirmar</button>
+                            <button class="btn-info" onclick="updateOrderStatus(${orderId}, 'SHIPPED')">📦 Enviar</button>
+                            <button class="btn-info" onclick="updateOrderStatus(${orderId}, 'IN_TRANSIT')">🚚 En Tránsito</button>
+                            <button class="btn-success" onclick="updateOrderStatus(${orderId}, 'DELIVERED')">✓ Entregado</button>
+                            <button class="btn-danger" onclick="updateOrderStatus(${orderId}, 'CANCELLED')">✗ Cancelar</button>
+                        </div>
+
+                        <h4>📦 Productos</h4>
+                        <div class="items-list">
+                            ${order.items.map(item => `
+                                <div class="item-row">
+                                    <span>${item.productName}</span>
+                                    <span>${item.quantity} x $${item.productPrice.toFixed(2)} = $${(item.quantity * item.productPrice).toFixed(2)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        ${order.shipment ? `
+                            <h4>🚚 Envío</h4>
+                            <div class="items-list">
+                                <p><strong>Tracking:</strong> ${order.shipment.trackingNumber}</p>
+                                <p><strong>Estado:</strong> <span class="status-badge status-${order.shipment.status.toLowerCase()}">${order.shipment.status}</span></p>
+                                <p><strong>Carrier:</strong> ${order.shipment.carrier}</p>
+                                <p><strong>Ubicación:</strong> ${order.shipment.currentLocation || 'Por determinar'}</p>
+                            </div>
+                        ` : ''}
+
+                        ${order.invoice ? `
+                            <h4>📄 Factura</h4>
+                            <div class="items-list">
+                                <p><strong>Número:</strong> ${order.invoice.invoiceNumber}</p>
+                                <p><strong>Estado:</strong> <span class="status-badge status-${order.invoice.status.toLowerCase()}">${order.invoice.status}</span></p>
+                                <p><strong>Subtotal:</strong> $${order.invoice.subtotal.toFixed(2)}</p>
+                                <p><strong>Impuestos (16%):</strong> $${order.invoice.taxAmount.toFixed(2)}</p>
+                                <p><strong>Total:</strong> $${order.invoice.totalAmount.toFixed(2)}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                document.getElementById('orderDetailsContent').innerHTML = html;
+                document.getElementById('orderDetailsModal').classList.add('show');
+            } catch (error) {
+                alert('Error al cargar detalles del pedido');
+            }
+        }
+
+        async function updateOrderStatus(orderId, newStatus) {
+            if (!confirm(`¿Estás seguro de cambiar el estado a ${newStatus}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_ORDERS}/${orderId}/status?status=${newStatus}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    alert(`✅ Estado actualizado a ${newStatus}`);
+                    // Reload pedidos
+                    loadOrders();
+                    // Reload detalles
+                    showOrderDetails(orderId);
+                } else {
+                    alert('❌ Error al actualizar estado');
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // ============ SEGUIMIENTO ============
+        async function searchTracking() {
+            const search = document.getElementById('trackingSearch').value.trim();
+            if (!search) {
+                alert('Ingresa un número de pedido o tracking');
+                return;
+            }
+
+            try {
+                // Try order search first
+                let response = await fetch(`${API_ORDERS}`);
+                let orders = await response.json();
+                let order = orders.find(o => o.orderNumber === search);
+
+                if (order) {
+                    displayTrackingInfo(order);
+                } else {
+                    // Try shipment tracking
+                    response = await fetch(`${API_SHIPMENTS}/track/${search}`);
+                    if (response.ok) {
+                        const shipment = await response.json();
+                        // Load full order with shipment
+                        response = await fetch(`${API_ORDERS}/${shipment.order.id}`);
+                        order = await response.json();
+                        displayTrackingInfo(order);
+                    } else {
+                        document.getElementById('trackingResultContainer').innerHTML = '<p style="color: red;">❌ Pedido no encontrado</p>';
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('trackingResultContainer').innerHTML = '<p style="color: red;">❌ Error en la búsqueda</p>';
+            }
+        }
+
+        function displayTrackingInfo(order) {
+            let html = `
+                <div style="background: white; padding: 20px; border-radius: 5px; margin-top: 20px;">
+                    <h3>Pedido: ${order.orderNumber}</h3>
+                    <p><strong>Cliente:</strong> ${order.customerName}</p>
+                    <p><strong>Estado General:</strong> <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></p>
+
+                    <div class="order-timeline" style="margin-top: 30px;">
+            `;
+
+            const timeline = [
+                { step: 'Pedido Creado', date: new Date(order.createdAt), status: 'PENDING', completed: true },
+                { step: 'Confirmado', date: order.shipment?.shippedDate, status: 'CONFIRMED', completed: order.status !== 'PENDING' },
+                { step: 'Enviado', date: order.shipment?.shippedDate, status: 'SHIPPED', completed: ['SHIPPED', 'IN_TRANSIT', 'DELIVERED'].includes(order.status) },
+                { step: 'En Tránsito', date: order.shipment?.estimatedDelivery, status: 'IN_TRANSIT', completed: ['IN_TRANSIT', 'DELIVERED'].includes(order.status) },
+                { step: 'Entregado', date: order.shipment?.deliveredDate, status: 'DELIVERED', completed: order.status === 'DELIVERED' }
+            ];
+
+            timeline.forEach((item, idx) => {
+                const dotClass = item.completed ? 'completed' : 'pending';
+                html += `
+                    <div class="timeline-step">
+                        <div class="timeline-dot ${dotClass}"></div>
+                        ${idx < timeline.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                        <div class="timeline-content">
+                            <h4>${item.step}</h4>
+                            <p>${item.date ? new Date(item.date).toLocaleString() : 'Pendiente'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+
+            if (order.shipment) {
+                html += `
+                    <div style="background: #e3f2fd; padding: 20px; border-radius: 5px; margin-top: 20px;">
+                        <h4>📦 Información del Envío</h4>
+                        <p><strong>Tracking:</strong> ${order.shipment.trackingNumber}</p>
+                        <p><strong>Carrier:</strong> ${order.shipment.carrier}</p>
+                        <p><strong>Ubicación Actual:</strong> ${order.shipment.currentLocation || 'En procesamiento'}</p>
+                        <p><strong>Nota:</strong> ${order.shipment.notes || 'Sin notas'}</p>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            document.getElementById('trackingResultContainer').innerHTML = html;
+        }
+
+        // ============ FACTURAS ============
+        async function loadInvoices() {
+            try {
+                const response = await fetch(`${API_INVOICES}`);
+                const invoices = await response.json();
+
+                let html = '<table>';
+                html += '<thead><tr><th>Número</th><th>Orden</th><th>Subtotal</th><th>Impuestos</th><th>Total</th><th>Estado</th><th>Acciones</th></tr></thead>';
+                html += '<tbody>';
+
+                invoices.forEach(invoice => {
+                    const statusClass = `status-${invoice.status.toLowerCase()}`;
+                    html += `
+                        <tr>
+                            <td>${invoice.invoiceNumber}</td>
+                            <td>${invoice.order?.orderNumber || 'N/A'}</td>
+                            <td>$${invoice.subtotal.toFixed(2)}</td>
+                            <td>$${invoice.taxAmount.toFixed(2)}</td>
+                            <td><strong>$${invoice.totalAmount.toFixed(2)}</strong></td>
+                            <td><span class="status-badge ${statusClass}">${invoice.status}</span></td>
+                            <td>
+                                <button class="btn-info" onclick="downloadInvoice(${invoice.id})">📥 Descargar PDF</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                if (invoices.length === 0) {
+                    html = '<p>No hay facturas registradas</p>';
+                }
+                document.getElementById('invoicesTableContainer').innerHTML = html;
+            } catch (error) {
+                console.error('Error loading invoices:', error);
+            }
+        }
+
+        async function generateInvoice(orderId) {
+            try {
+                const response = await fetch(`${API_INVOICES}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        orderId: orderId,
+                        taxId: 'RFC-' + Date.now()
+                    })
+                });
+
+                if (response.ok) {
+                    alert('✅ Factura generada exitosamente');
+                    loadInvoices();
+                } else {
+                    alert('❌ Error al generar factura');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        function downloadInvoice(invoiceId) {
+            window.open(`${API_INVOICES}/${invoiceId}/pdf`, '_blank');
+        }
+
+        // ============ UTILIDADES ============
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function showMessage(message, elementId) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Load products on page load
+        window.addEventListener('load', loadProducts);
+    </script>
+</body>
+</html>

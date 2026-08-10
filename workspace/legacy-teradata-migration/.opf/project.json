@@ -1,0 +1,9 @@
+{
+  "id": "legacy-teradata-migration",
+  "name": "Legacy Teradata DW \u2192 AWS (Redshift + Glue) Migration",
+  "language": "python+sql",
+  "lint_cmd": "ruff check target tests",
+  "test_cmd": "pytest tests -q",
+  "typecheck_cmd": "ruff check --select=E,F target tests",
+  "description": "Sample data-engineering project that holds a small slice of a legacy Teradata data warehouse (DDL + BTEQ + Python wrapper) under legacy/ and is migrated to AWS (Redshift DDL + Glue PySpark jobs) under target/ by the OPF swarm. Workers must NOT modify anything in legacy/."
+}

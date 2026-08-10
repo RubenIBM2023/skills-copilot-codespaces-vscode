@@ -1,0 +1,8 @@
+{
+  "req_id": "REQ-2026-05-31-001-teradata-to-aws",
+  "project": "legacy-teradata-migration",
+  "branch_prefix": "opencode/swarm",
+  "created": "2026-05-31T00:00:00Z",
+  "author": "human-operator",
+  "title": "Migrate legacy Teradata DW slice to AWS (Redshift + Glue PySpark) with ICA-assisted review"
+}

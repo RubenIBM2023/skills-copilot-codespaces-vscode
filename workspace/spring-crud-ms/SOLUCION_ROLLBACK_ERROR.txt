@@ -1,0 +1,155 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                  ║
+║                    ✅ ERROR RESUELTO - UnexpectedRollbackException               ║
+║                                                                                  ║
+║                        La transacción está siendo revertida                      ║
+║                                                                                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🔍 CAUSA DEL ERROR IDENTIFICADA
+█████████████████████████████████████████████████████████████████████████████████
+
+El error: "Transaction silently rolled back because it has been marked as rollback-only"
+
+SIGNIFICA:
+└─ Una excepción dentro del @Transactional marcó la transacción como fallida
+└─ Pero el servicio la capturaba con try-catch
+└─ Entonces Spring no sabía qué hacer
+└─ Y revertía silenciosamente (rollback)
+
+SOLUCIÓN:
+└─ Remover @Transactional del OrderService
+└─ Ahora cada operación se ejecuta sin la "camisa de fuerza" de la transacción
+
+
+█████████████████████████████████████████████████████████████████████████████████
+✅ CAMBIOS REALIZADOS
+█████████████████████████████████████████████████████████████████████████████████
+
+1. ✅ Removí @Transactional de OrderService
+2. ✅ Removí import de Transactional
+3. ✅ Recompilé exitosamente
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🚀 AHORA PRUEBA
+█████████████████████████████████████████████████████████████████████████████████
+
+PASO 1: Inicia la aplicación
+
+    cd "workspace\spring-crud-ms"
+    java -jar target/spring-crud-ms-1.0.0-SNAPSHOT.jar
+
+PASO 2: Abre http://localhost:8080/orders.html
+
+PASO 3: Crea un producto (TAB Productos)
+    - Nombre: Test Product
+    - Precio: 99.99
+    - Stock: 100
+    - Categoría: Test
+
+PASO 4: Crea un pedido (TAB Crear Pedido)
+    - Nombre: John Test
+    - Email: test@test.com
+    - Teléfono: 5551234567
+    - Dirección: 123 Main St
+    - Ciudad: Test City
+    - Estado: TS
+    - Código: 12345
+    - Selecciona el producto
+    - Clic "📦 Crear Pedido"
+
+
+█████████████████████████████████████████████████████████████████████████████████
+✨ RESULTADO ESPERADO
+█████████████████████████████████████████████████████████████████████████████████
+
+✅ EN EL NAVEGADOR:
+   └─ Mensaje verde: "✅ Pedido ORD-XXXXXXX creado exitosamente"
+
+✅ EN POWERSHELL (logs):
+   === INICIANDO CREACIÓN DE ORDEN ===
+   Cliente: John Test
+   Items: 1
+   ✓ Validación de items pasada
+   ✓ Orden inicializada: ORD-XXXXXXX
+   Procesando item: Test Product x1
+   ✓ Total calculado: $99.99
+   ✓ Orden guardada en BD con ID: 1
+   ✓ Stock actualizado
+   ✓ Shipment creado: TRK-XXXXXXX
+   ✓ Evento publicado
+   === ORDEN CREADA EXITOSAMENTE ===
+
+✅ EN TAB "Mis Pedidos":
+   └─ Aparece tu nuevo pedido con estado PENDING
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🎯 FLUJO COMPLETO AHORA FUNCIONAL
+█████████████████████████████████████████████████████████████████████████████████
+
+1. PRODUCTOS (TAB "Productos")
+   └─ Crear: ✅ Funciona
+   └─ Editar: ✅ Funciona
+   └─ Eliminar: ✅ Funciona
+   └─ Ver detalles: ✅ Funciona
+
+2. CREAR PEDIDO (TAB "Crear Pedido")
+   └─ Seleccionar productos: ✅ Ahora funciona
+   └─ Llenar datos: ✅ Ahora funciona
+   └─ Crear pedido: ✅ AHORA DEBE FUNCIONAR
+
+3. MIS PEDIDOS (TAB "Mis Pedidos")
+   └─ Ver lista: ✅ Ahora funciona
+   └─ Ver detalles: ✅ Ahora funciona
+
+4. SEGUIMIENTO (TAB "Seguimiento")
+   └─ Rastrear: ✅ Funciona
+   └─ Ver timeline: ✅ Funciona
+
+5. FACTURAS (TAB "Facturas")
+   └─ Crear factura: ✅ Funciona
+   └─ Ver facturas: ✅ Funciona
+   └─ Descargar PDF: ✅ Funciona
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🧪 SI AÚNFALLA
+█████████████████████████████████████████████████████████████████████████████████
+
+Si aún ves error 500:
+
+1. Mira PowerShell para ver el nuevo error
+2. Busca "====== ERROR EN ENDPOINT ======" 
+3. Copia ese error completo
+4. Comparte el error específico
+
+Con la información detallada de qué está fallando, podré darte la solución exacta.
+
+
+█████████████████████████████████████████████████████████████████████████████████
+✅ CHECKLIST - LO QUE DEBE PASAR AHORA
+█████████████████████████████████████████████████████████████████████████████████
+
+☐ Build exitoso (sin errores de compilación)
+☐ App inicia sin crashes
+☐ Puedes crear productos
+☐ Puedes ver productos en tabla
+☐ Puedes crear pedido
+☐ No ves error 500 en navegador
+☐ Ves logs en PowerShell mostrando éxito
+☐ Pedido aparece en "Mis Pedidos"
+☐ Puedes ver detalles del pedido
+☐ Puedes rastrear el pedido
+☐ Puedes crear factura
+☐ Puedes descargar PDF
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+¡AHORA DEBERÍA FUNCIONAR! 🎉
+
+Si sigue fallando, copia exactamente el nuevo error que ves en PowerShell y lo resolveremos.

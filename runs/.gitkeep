@@ -1,0 +1,3 @@
+# This directory holds append-only swarm run logs.
+# Each run is stored under runs/<REQ_ID>/<UTC_TIMESTAMP>/.
+# Do not edit or delete contents manually.

@@ -1,0 +1,192 @@
+{
+  "info": {
+    "_postman_id": "spring-crud-ms",
+    "name": "Product CRUD API",
+    "description": "Colección para probar todos los endpoints del microservicio Product CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Productos",
+      "item": [
+        {
+          "name": "1. Crear Producto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"iPhone 15 Pro\",\n  \"description\": \"Smartphone Apple flagship de última generación\",\n  \"price\": 1299.99,\n  \"stock\": 20,\n  \"category\": \"Smartphones\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2. Listar Todos (Con Paginación)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products?page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3. Obtener Producto por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{product_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4. Actualizar Producto Completo (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"iPhone 15 Pro Max\",\n  \"description\": \"Versión Plus del iPhone 15 Pro\",\n  \"price\": 1499.99,\n  \"stock\": 10,\n  \"category\": \"Smartphones\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{product_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5. Actualización Parcial (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 999.99,\n  \"stock\": 25\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{product_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6. Eliminar Producto",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{product_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{product_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pruebas de Validación",
+      "item": [
+        {
+          "name": "Error: Datos Inválidos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"description\": \"Falta nombre y otros campos\",\n  \"price\": -100,\n  \"stock\": -5,\n  \"category\": \"\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Error: Producto No Existe (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/invalid-id-12345",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "invalid-id-12345"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "product_id",
+      "value": "REEMPLAZAR_CON_ID_REAL"
+    }
+  ]
+}

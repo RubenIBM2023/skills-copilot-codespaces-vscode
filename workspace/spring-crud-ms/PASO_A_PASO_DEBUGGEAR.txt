@@ -1,0 +1,242 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                  ║
+║                    🚀 GUÍA RÁPIDA - ENCONTRAR EL ERROR 500                      ║
+║                                                                                  ║
+║                         3 Pasos simples para debuggear                           ║
+║                                                                                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+█████████████████████████████████████████████████████████████████████████████████
+⚡ MEJORAS AGREGADAS AL CÓDIGO
+█████████████████████████████████████████████████████████████████████████████████
+
+✅ Agregué logging detallado en OrderService
+   └─ Ahora verás exactamente dónde falla
+
+✅ Agregué validaciones más robustas
+   └─ Manejo mejor de errores
+
+✅ Agregué TestController
+   └─ Para probar la conectividad
+
+✅ Mejoré manejo de excepciones
+   └─ Todo tiene try-catch
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🎯 PASO 1: REINICIA LA APP Y OBSERVA LOS LOGS
+█████████████████████████████████████████████████████████████████████████████████
+
+En PowerShell:
+
+    cd "workspace\spring-crud-ms"
+    java -jar target/spring-crud-ms-1.0.0-SNAPSHOT.jar
+
+IMPORTANTE: NO CIERRES esta ventana de PowerShell
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🎯 PASO 2: PRUEBA LOS ENDPOINTS DE DIAGNÓSTICO
+█████████████████████████████████████████████████████████████████████████████████
+
+Abre otra ventana de PowerShell y ejecuta:
+
+    # Verificar que la app está corriendo
+    Invoke-WebRequest "http://localhost:8080/api/test/health" -UseBasicParsing
+
+DEBERÍAS VER:
+    StatusCode: 200
+    {"status":"OK","timestamp":1691...,"message":"Aplicación corriendo correctamente"}
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🎯 PASO 3: CREA UN PEDIDO SIMPLE Y CAPTURA LOS LOGS
+█████████████████████████████████████████████████████████████████████████████████
+
+En la PRIMERA ventana de PowerShell (donde corre la app):
+
+VAS A VER LOGS COMO ESTOS:
+
+    === INICIANDO CREACIÓN DE ORDEN ===
+    Cliente: John Test
+    Items: 1
+    ✓ Validación de items pasada
+    ✓ Orden inicializada: ORD-123456789
+    Procesando item: Test Product x1
+    ✓ Total calculado: $99.99
+    ✓ Orden guardada en BD con ID: 1
+    ✓ Stock actualizado
+    ✓ Shipment creado: TRK-123456789-001
+    ✓ Evento publicado
+    === ORDEN CREADA EXITOSAMENTE ===
+
+O VERÁS UN ERROR COMO:
+
+    === INICIANDO CREACIÓN DE ORDEN ===
+    Cliente: John Test
+    Items: 1
+    ✓ Validación de items pasada
+    ✓ Orden inicializada: ORD-123456789
+    Procesando item: Test Product x1
+    ✓ Total calculado: $99.99
+    ERROR guardando orden: [AQUÍ EL ERROR REAL]
+
+
+█████████████████████████████████████████████████████████████████████████████████
+💡 AHORA HAZLO EN EL NAVEGADOR
+█████████████████████████████████████████████████████████████████████████████████
+
+1. Abre: http://localhost:8080/orders.html
+   └─ Ctrl+F5 para limpiar caché
+
+2. TAB "Productos"
+   └─ Crea 1 producto:
+      • Nombre: Test Product
+      • Precio: 99.99
+      • Stock: 100
+      • Categoría: Test
+
+3. TAB "Crear Pedido"
+   └─ Llena TODOS los campos:
+      • Cliente: John Test
+      • Email: test@test.com
+      • Teléfono: 5551234567
+      • Dirección: 123 Main St
+      • Ciudad: Test City
+      • Estado: TS
+      • Código: 12345
+
+4. Selecciona el producto y clic "📦 Crear Pedido"
+
+5. MIRA LA VENTANA DE POWERSHELL
+   └─ Verás los logs mostrando exactamente dónde falla
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🔴 EJEMPLOS DE ERRORES Y SOLUCIONES
+█████████████████████████████████████████████████████████████████████████████████
+
+SI VES EN LOGS:
+   "La orden debe tener al menos 1 item"
+
+SOLUCIÓN:
+   └─ El HTML no está enviando los items
+   └─ Ve a F12 → Network → Request body
+   └─ Verifica que "items" no esté vacío
+
+
+─────────────────────────────────────────────────────────────────────────────
+
+SI VES EN LOGS:
+   "NullPointerException"
+
+SOLUCIÓN:
+   └─ Busca qué línea causa el error
+   └─ Generalmente es productService.findById()
+   └─ Verifca que el ID del producto sea correcto
+
+
+─────────────────────────────────────────────────────────────────────────────
+
+SI VES EN LOGS:
+   "Column X cannot be null"
+
+SOLUCIÓN:
+   └─ Algún campo requerido está vacío
+   └─ Llena TODOS los campos en el formulario
+   └─ No dejes nada en blanco
+
+
+─────────────────────────────────────────────────────────────────────────────
+
+SI DICE EN F12:
+   "Failed to load resource: the server responded with a status of 500"
+   
+PERO EN LOGS NO VES "=== ERROR EN ENDPOINT ===" :
+
+SOLUCIÓN:
+   └─ La aplicación se crasheó
+   └─ Reinicia: Ctrl+C en PowerShell, luego java -jar...
+   └─ Mira los logs al iniciar
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🧪 ALTERNATIVA: PRUEBA CON CURL
+█████████████████████████████████████████████████████████████████████████████████
+
+Esta es la MEJOR forma porque ves el error exacto:
+
+PASO 1: Get product ID
+
+    $response = Invoke-WebRequest "http://localhost:8080/api/v1/products?size=1" `
+      -Headers @{"Content-Type"="application/json"} -UseBasicParsing
+    
+    $json = $response.Content | ConvertFrom-Json
+    $product = $json.content[0]
+    
+    Write-Host "ID: $($product.id)"
+    Write-Host "Name: $($product.name)"
+    Write-Host "Price: $($product.price)"
+
+
+PASO 2: Create order with curl
+
+    $productId = [string]$product.id  # Copia el ID que viste arriba
+    
+    $body = @{
+        customerName = "John Test"
+        customerEmail = "test@test.com"
+        customerPhone = "5551234567"
+        shippingAddress = "123 Main"
+        city = "TestCity"
+        state = "TS"
+        zipCode = "12345"
+        items = @(
+            @{
+                productId = $productId
+                productName = $product.name
+                productPrice = $product.price
+                quantity = 1
+            }
+        )
+    } | ConvertTo-Json
+
+    Write-Host "Body:" -ForegroundColor Yellow
+    Write-Host $body -ForegroundColor Cyan
+    
+    $response = Invoke-WebRequest "http://localhost:8080/orders" `
+      -Method POST `
+      -Headers @{"Content-Type"="application/json"} `
+      -Body $body `
+      -UseBasicParsing
+
+    Write-Host "StatusCode:" $response.StatusCode -ForegroundColor Green
+    Write-Host "Response:" -ForegroundColor Green
+    $response.Content
+
+
+RESULTADO ESPERADO SI FUNCIONA:
+    
+    StatusCode: 201
+    Response: {"id":1,"orderNumber":"ORD-123...","status":"PENDING",...}
+
+
+RESULTADO SI FALLA:
+
+    StatusCode: 500
+    Response: {"status":500,"error":"NullPointerException",...}
+             O
+             {"status":500,"error":"DataIntegrityViolationException",...}
+
+
+═════════════════════════════════════════════════════════════════════════════════
+
+AHORA TÚ:
+
+1. Reinicia la app
+2. Intenta crear un pedido
+3. COPIA y PEGA LOS LOGS que ves en PowerShell
+4. O copia el error de la respuesta JSON
+
+Con eso podré ayudarte específicamente 🎯

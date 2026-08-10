@@ -1,0 +1,478 @@
+{
+  "info": {
+    "_postman_id": "spring-crud-ms-collection",
+    "name": "Spring CRUD Microservices - Pruebas",
+    "description": "Colección completa de pruebas para REQ-2026-08-08-001-spring-crud-ms",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. CREAR PRODUCTO",
+      "item": [
+        {
+          "name": "1.1 - Crear Laptop (Éxito)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Dell XPS 13\",\n  \"description\": \"Laptop ultraportátil con procesador Intel Core i7\",\n  \"price\": 1299.99,\n  \"stock\": 5,\n  \"category\": \"Electronics\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Crear un producto válido. Esperar 201 Created con ID generado."
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 - Crear Smartphone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"iPhone 15 Pro\",\n  \"description\": \"Smartphone flagship de Apple con pantalla AMOLED\",\n  \"price\": 999.99,\n  \"stock\": 15,\n  \"category\": \"Electronics\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 - Crear T-Shirt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"T-Shirt Básica\",\n  \"description\": \"Camiseta de algodón 100% pura\",\n  \"price\": 24.99,\n  \"stock\": 100,\n  \"category\": \"Clothing\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 - Validación: Nombre Vacío (Falla)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"description\": \"Sin nombre\",\n  \"price\": 100.00,\n  \"stock\": 10,\n  \"category\": \"Test\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Esperar 400 Bad Request con validación de error"
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 - Validación: Precio Negativo (Falla)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Producto Inválido\",\n  \"description\": \"Precio negativo\",\n  \"price\": -50.00,\n  \"stock\": 10,\n  \"category\": \"Test\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Esperar 400 Bad Request"
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 - Validación: Stock Negativo (Falla)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Producto Inválido\",\n  \"description\": \"Stock negativo\",\n  \"price\": 100.00,\n  \"stock\": -5,\n  \"category\": \"Test\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Esperar 400 Bad Request"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. LEER PRODUCTOS",
+      "item": [
+        {
+          "name": "2.1 - Obtener Todos (Sin Paginación)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"]
+            },
+            "description": "Obtener lista de todos los productos"
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 - Obtener Todos (Con Paginación)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products?page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Obtener productos con paginación (página 0, 10 items por página)"
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 - Obtener Producto por ID (Success)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Obtener un producto específico por ID. Usar la variable {{PRODUCT_ID}} guardada de respuesta anterior."
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 - Obtener Producto No Existe (404)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/invalid_id_000000000000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "invalid_id_000000000000"]
+            },
+            "description": "Intentar obtener producto que no existe. Esperar 404 Not Found."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. ACTUALIZAR PRODUCTO",
+      "item": [
+        {
+          "name": "3.1 - PUT: Actualizar Completo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laptop Dell XPS 13 Actualizada\",\n  \"description\": \"Laptop ultraportátil con procesador Intel Core i9\",\n  \"price\": 1499.99,\n  \"stock\": 8,\n  \"category\": \"Premium Electronics\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Actualizar todos los campos del producto (PUT). Usar {{PRODUCT_ID}} de pasos anteriores."
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 - PATCH: Actualizar Solo Precio",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 1199.99\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Actualización parcial: solo cambiar precio"
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 - PATCH: Actualizar Solo Stock",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 15\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Actualización parcial: solo cambiar stock"
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 - PATCH: Actualizar Precio y Stock",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 999.99,\n  \"stock\": 20\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Actualización parcial: cambiar ambos campos"
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 - PATCH: Validación Precio Negativo (Falla)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": -100.00\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Esperar 400 Bad Request"
+          },
+          "response": []
+        },
+        {
+          "name": "3.6 - PUT: ID No Existe (404)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test\",\n  \"price\": 100.00,\n  \"stock\": 10,\n  \"category\": \"Test\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/invalid_id_000000000000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "invalid_id_000000000000"]
+            },
+            "description": "Esperar 404 Not Found"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. ELIMINAR PRODUCTO",
+      "item": [
+        {
+          "name": "4.1 - Eliminar Producto (Éxito)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Eliminar producto. Esperar 204 No Content."
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 - Verificar Eliminación (GET)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/{{PRODUCT_ID}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "{{PRODUCT_ID}}"]
+            },
+            "description": "Verificar que el producto fue eliminado. Esperar 404 Not Found."
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 - Eliminar ID No Existe (404)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:8080/api/v1/products/invalid_id_000000000000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "v1", "products", "invalid_id_000000000000"]
+            },
+            "description": "Esperar 404 Not Found"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. DOCUMENTACIÓN SWAGGER",
+      "item": [
+        {
+          "name": "5.1 - Swagger UI (Navegador)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/swagger-ui.html",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["swagger-ui.html"]
+            },
+            "description": "Abrir Swagger UI en el navegador para documentación interactiva"
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 - OpenAPI JSON Schema",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8080/api-docs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api-docs"]
+            },
+            "description": "Obtener esquema OpenAPI en formato JSON"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

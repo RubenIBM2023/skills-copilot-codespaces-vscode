@@ -1,0 +1,8 @@
+{
+  "id": "spring-crud-ms",
+  "name": "Microservicio 1 — CRUD básico de Productos (Spring Boot + MongoDB)",
+  "language": "java",
+  "lint_cmd": "mvn checkstyle:check",
+  "test_cmd": "mvn test",
+  "typecheck_cmd": "mvn compile"
+}

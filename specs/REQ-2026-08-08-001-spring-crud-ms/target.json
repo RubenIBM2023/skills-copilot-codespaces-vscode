@@ -1,0 +1,8 @@
+{
+  "req_id": "REQ-2026-08-08-001-spring-crud-ms",
+  "project": "spring-crud-ms",
+  "branch_prefix": "opencode/swarm",
+  "created": "2026-08-08T16:06:00Z",
+  "author": "human-operator",
+  "title": "Microservicio 1 — CRUD básico de Productos con Spring Boot, MongoDB y Swagger/OpenAPI"
+}

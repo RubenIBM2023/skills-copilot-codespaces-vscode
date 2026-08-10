@@ -1,0 +1,343 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                  ║
+║                     🔍 GUÍA DE DEBUGGING - ERROR 500 PEDIDOS                    ║
+║                                                                                  ║
+║                       Solución paso a paso para encontrar                        ║
+║                       la causa REAL del error 500                                ║
+║                                                                                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🚀 PASO 1: REINICIA LA APLICACIÓN CON MEJOR LOGGING
+█████████████████████████████████████████████████████████████████████████████████
+
+1. Mata la aplicación actual:
+   Ctrl+C en PowerShell
+
+2. Navega al proyecto:
+   cd "workspace\spring-crud-ms"
+
+3. Inicia con nivel DEBUG:
+   java -jar target/spring-crud-ms-1.0.0-SNAPSHOT.jar --debug
+
+4. Espera a ver:
+   "Started Application in X.XXX seconds"
+
+5. IMPORTANTE: Deja PowerShell abierto para ver los LOGS
+
+
+█████████████████████████████████████████████████████████████████████████████████
+👁️  PASO 2: ABRE F12 EN EL NAVEGADOR
+█████████████████████████████████████████████████████████████████████████████████
+
+1. Abre: http://localhost:8080/orders.html
+
+2. Presiona F12 (Developer Tools)
+
+3. Ve a Tab "Network"
+
+4. Marca "Preserve log" (checkbox)
+
+5. Limpia caché: Ctrl+F5
+
+6. Esto capturará TODAS las peticiones
+
+
+█████████████████████████████████████████████████████████████████████████████████
+📝 PASO 3: INTENTA CREAR UN PEDIDO SIMPLE
+█████████████████████████████████████████████████████████████████████████████████
+
+PRIMERO: Crea un producto simple
+─────────────────────────────────
+
+TAB "Productos":
+┌─ Nombre: "Test Product"
+├─ Precio: 99.99
+├─ Stock: 50
+├─ Categoría: "Test"
+└─ Clic: "💾 Guardar Producto"
+
+LUEGO: Crea un pedido simple
+─────────────────────────────
+
+TAB "Crear Pedido":
+┌─ Cliente Nombre: "John Test"
+├─ Email: "test@test.com"
+├─ Teléfono: "5551234567"
+├─ Dirección: "123 Main St"
+├─ Ciudad: "Test City"
+├─ Estado: "TS"
+├─ Código Postal: "12345"
+├─ Clic: "➕ Agregar Producto"
+├─ Selecciona "Test Product"
+├─ Cantidad: 1
+└─ Clic: "📦 Crear Pedido"
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🔴 PASO 4: CAPTURA EL ERROR EN F12
+█████████████████████████████████████████████████████████████████████████████████
+
+1. En F12 → Tab "Network"
+   └─ Busca "POST orders" (el último)
+
+2. Haz clic en esa petición
+
+3. Ve a Tab "Response"
+   └─ Verás el JSON de error
+
+4. COPIA TODO EL CONTENIDO del Response
+
+
+█████████████████████████████████████████████████████████████████████████████████
+💻 PASO 5: REVISA LOS LOGS EN POWERSHELL
+█████████████████████████████████████████████████████████████████████████████████
+
+En la ventana de PowerShell donde está corriendo la app:
+
+Busca linea que diga:
+   "====== ERROR EN ENDPOINT ======"
+
+Verás:
+   URL: /orders
+   Método: POST
+   Error: [Nombre de la excepción]
+   Mensaje: [Descripción del error]
+   Stack Trace: [Línea exacta del código que falló]
+
+COPIA ESTO TODO
+
+
+█████████████████████████████████████████████████████████████████████████████████
+📋 EJEMPLOS DE ERRORES COMUNES Y SOLUCIONES
+█████████████████████████████████████████████████████████████████████████████████
+
+┌─ ERROR 1: NullPointerException en ProductService ─────────────────────────┐
+│                                                                             │
+│ SÍNTOMA EN LOGS:                                                           │
+│   Error: NullPointerException                                             │
+│   Mensaje: Cannot invoke "...findById(...)" because "..." is null        │
+│                                                                             │
+│ CAUSA:                                                                     │
+│   El producto que intentas comprar no existe en MongoDB                  │
+│                                                                             │
+│ SOLUCIÓN:                                                                  │
+│   ✅ Asegúrate de crear producto PRIMERO                                 │
+│   ✅ Copia el ID exacto del producto                                      │
+│   ✅ El HTML debe enviar el ID correcto                                  │
+│                                                                             │
+│ ACCIÓN RÁPIDA:                                                            │
+│   1. Ve a TAB "Productos"                                                 │
+│   2. Crea nuevo producto                                                  │
+│   3. Copia su ID (del navegador, F12 Network)                           │
+│   4. Usa ese ID exacto en el pedido                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ERROR 2: NullPointerException en ShipmentService ─────────────────────────┐
+│                                                                             │
+│ SÍNTOMA EN LOGS:                                                           │
+│   Error: NullPointerException                                             │
+│   Mensaje: Cannot invoke "Order.getId()" because "..." is null          │
+│                                                                             │
+│ CAUSA:                                                                     │
+│   La orden no se guardó correctamente en PostgreSQL (H2)                 │
+│                                                                             │
+│ SOLUCIÓN:                                                                  │
+│   ✅ Verifica que H2 esté corriendo (embebido)                          │
+│   ✅ Revisa H2 Console: http://localhost:8080/h2-console               │
+│   └─ URL: jdbc:h2:mem:ordersdb                                          │
+│   └─ Username: sa (sin contraseña)                                      │
+│                                                                             │
+│ ACCIÓN RÁPIDA:                                                            │
+│   1. Abre http://localhost:8080/h2-console                              │
+│   2. Haz clic Connect                                                    │
+│   3. Ejecuta: SELECT * FROM orders;                                      │
+│   4. Si está vacío, H2 funciona (pero no está guardando)                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ERROR 3: DataIntegrityViolationException ───────────────────────────────┐
+│                                                                             │
+│ SÍNTOMA EN LOGS:                                                           │
+│   Error: DataIntegrityViolationException                                 │
+│   Mensaje: Column "X" cannot be null                                      │
+│                                                                             │
+│ CAUSA:                                                                     │
+│   El HTML envía un campo vacío/nulo que es requerido                    │
+│                                                                             │
+│ SOLUCIÓN:                                                                  │
+│   ✅ Asegúrate de llenar TODOS los campos del formulario:                │
+│      • Nombre cliente                                                    │
+│      • Email                                                             │
+│      • Teléfono                                                          │
+│      • Dirección                                                         │
+│      • Ciudad                                                            │
+│      • Estado                                                            │
+│      • Código postal                                                     │
+│      • Al menos 1 producto                                              │
+│                                                                             │
+│ ACCIÓN RÁPIDA:                                                            │
+│   1. Recarga la página: Ctrl+F5                                          │
+│   2. Llena TODOS los campos (no dejes ninguno en blanco)                 │
+│   3. Intenta de nuevo                                                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ERROR 4: ClassCastException o tipo incompatible ────────────────────────┐
+│                                                                             │
+│ SÍNTOMA EN LOGS:                                                           │
+│   Error: ClassCastException                                              │
+│   o: Cannot convert to Double/Integer                                     │
+│                                                                             │
+│ CAUSA:                                                                     │
+│   El HTML envía un tipo de dato incorrecto (ej: texto en lugar de número)│
+│                                                                             │
+│ SOLUCIÓN:                                                                  │
+│   ✅ Verifica el JSON que envía el HTML                                  │
+│   ✅ Precio debe ser número: 99.99 (no "99.99")                         │
+│   ✅ Cantidad debe ser número: 1 (no "1")                                │
+│                                                                             │
+│ ACCIÓN RÁPIDA:                                                            │
+│   1. Abre F12 → Network                                                  │
+│   2. POST /orders → Request                                              │
+│   3. Ve JSON enviado                                                     │
+│   4. Busca "quantity": "1" (STRING)                                      │
+│   5. Debe ser "quantity": 1 (NUMBER)                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🧪 PRUEBA CON CURL (MÁS FÁCIL DE DEBUGGEAR)
+█████████████████████████████████████████████████████████████████████████████████
+
+Este método es MEJOR porque ves el error exacto:
+
+PASO 1: Obtén ID de un producto
+────────────────────────────────
+
+$response = Invoke-WebRequest -Uri "http://localhost:8080/api/v1/products?size=10" `
+  -Headers @{"Content-Type"="application/json"} `
+  -UseBasicParsing
+
+$json = $response.Content | ConvertFrom-Json
+$json.content | Select-Object id, name, price, stock
+
+Verás algo como:
+  id      name           price  stock
+  ------- -------------- ------ -----
+  655a... Test Product   99.99   50
+
+
+PASO 2: Copia el ID (el que empieza con 655a...)
+
+PASO 3: Crea un pedido SIMPLE con curl
+──────────────────────────────────────
+
+$productId = "AQUI_PEGA_EL_ID"
+
+$body = @{
+    customerName = "John Test"
+    customerEmail = "john@test.com"
+    customerPhone = "5551234567"
+    shippingAddress = "123 Main St"
+    city = "Test City"
+    state = "TS"
+    zipCode = "12345"
+    items = @(
+        @{
+            productId = $productId
+            productName = "Test Product"
+            productPrice = 99.99
+            quantity = 1
+        }
+    )
+} | ConvertTo-Json
+
+Write-Host "=== BODY A ENVIAR ===" -ForegroundColor Yellow
+Write-Host $body -ForegroundColor Cyan
+Write-Host "=====================" -ForegroundColor Yellow
+
+$response = Invoke-WebRequest -Uri "http://localhost:8080/orders" `
+  -Method POST `
+  -Headers @{"Content-Type"="application/json"} `
+  -Body $body `
+  -UseBasicParsing
+
+Write-Host "Status: $($response.StatusCode)" -ForegroundColor Green
+Write-Host "Response:" -ForegroundColor Green
+$response.Content | ConvertFrom-Json | ConvertTo-Json
+
+
+RESULTADO ESPERADO:
+─────────────────
+
+Status: 201
+Response: {
+  "id": 1,
+  "orderNumber": "ORD-123456789",
+  "customerName": "John Test",
+  "status": "PENDING",
+  "totalAmount": 99.99,
+  ...
+}
+
+
+SI VES ERROR:
+─────────────
+
+Verás JSON como:
+{
+  "status": 500,
+  "error": "NullPointerException",
+  "message": "...",
+  "path": "/orders"
+}
+
+COPIA ESE MENSAJE exacto
+
+
+█████████████████████████████████████████████████████████████████████████████████
+📸 CAPTURA DE PANTALLA - QUÉ COMPARTIR
+█████████████████████████████████████████████████████████████████████████████████
+
+Para que pueda ayudarte mejor, comparte:
+
+1. Screenshot de F12 → Response (el JSON completo del error)
+
+2. Logs de PowerShell (entre === ERROR EN ENDPOINT === ... ======)
+
+3. El JSON exacto que enviaste (de F12 → Request)
+
+4. El comando curl que usaste (si aplica)
+
+Con esto podré ver exactamente cuál es el problema.
+
+
+█████████████████████████████████████████████████████████████████████████████████
+✅ CHECKLIST FINAL
+█████████████████████████████████████████████████████████████████████████████████
+
+Antes de compartir el error, verifica:
+
+☐ La app está corriendo (ves "Started Application")
+☐ Tienes al menos 1 producto creado
+☐ Todos los campos del formulario están LLENOS (no vacíos)
+☐ Los números son realmente números (no strings)
+☐ H2-Console está accesible: http://localhost:8080/h2-console
+☐ MongoDB está corriendo (embebido)
+☐ No hay errores en F12 Console ANTES de crear el pedido
+☐ BuildSuccess en la compilación anterior
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+Sigue esta guía y podremos encontrar la causa REAL del error 500.
+
+Comparte el error exacto de:
+1. F12 → Network → Response
+2. PowerShell logs
+
+¡Entonces podré darte la solución específica! 🎯

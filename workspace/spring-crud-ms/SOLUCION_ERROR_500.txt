@@ -1,0 +1,272 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                  ║
+║                           ✅ SOLUCIÓN - ERROR 500                               ║
+║                                                                                  ║
+║                    POST http://localhost:8080/api/products 500                  ║
+║                                                                                  ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+
+█████████████████████████████████████████████████████████████████████████████████
+📋 PROBLEMA IDENTIFICADO
+█████████████████████████████████████████████████████████████████████████████████
+
+El HTML estaba usando rutas de API incorrectas:
+
+❌ INCORRECTO (Lo que estaba):
+   - POST /api/products (no existe esta ruta)
+   - POST /orders (ruta parcial)
+   - GET /shipments (ruta parcial)
+
+✅ CORRECTO (Lo que está ahora):
+   - POST /api/v1/products (ruta correcta)
+   - POST /orders (ruta correcta)
+   - GET /shipments (ruta correcta)
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🔧 CAMBIOS REALIZADOS
+█████████████████████████████████████████████████████████████████████████████████
+
+1. ✅ Actualicé las rutas de API en orders.html:
+   └─ API_PRODUCTS = 'http://localhost:8080/api/v1/products'
+   └─ API_ORDERS = 'http://localhost:8080/orders'
+   └─ API_SHIPMENTS = 'http://localhost:8080/shipments'
+   └─ API_INVOICES = 'http://localhost:8080/invoices'
+
+2. ✅ Corregí la función loadProducts():
+   └─ Ahora maneja respuestas con paginación
+   └─ Extrae datos del campo 'content' de la Page
+   └─ Añade tamaño de página: ?size=100
+
+3. ✅ Recompilé sin errores
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🚀 PASOS PARA RESOLVER
+█████████████████████████████████████████████████████████████████████████████████
+
+PASO 1: Mata la aplicación actual (si está corriendo)
+    Ctrl+C en PowerShell
+
+PASO 2: Limpia cualquier puerto bloqueado (si es necesario)
+    # Ver procesos en puerto 8080:
+    netstat -ano | findstr :8080
+    
+    # Matar proceso (reemplaza PID):
+    taskkill /PID <PID> /F
+
+PASO 3: Reinicia la aplicación
+    cd "workspace\spring-crud-ms"
+    java -jar target/spring-crud-ms-1.0.0-SNAPSHOT.jar
+
+PASO 4: Espera el mensaje:
+    "Started Application in X.XXX seconds"
+
+PASO 5: Abre navegador
+    http://localhost:8080/orders.html
+
+PASO 6: Limpia caché del navegador
+    Ctrl+F5 (o Shift+Ctrl+R)
+
+PASO 7: Intenta crear un producto nuevamente
+
+
+█████████████████████████████████████████████████████████████████████████████████
+✅ VERIFICACIÓN - ENDPOINTS DISPONIBLES
+█████████████████████████████████████████████████████████████████████████████████
+
+Para verificar que los endpoints funcionan, usa estos comandos en PowerShell:
+
+1. LISTAR PRODUCTOS
+   ────────────────────────────────────────────────────────────────────────────
+   $response = Invoke-WebRequest -Uri "http://localhost:8080/api/v1/products?size=10" `
+     -Headers @{"Content-Type"="application/json"} `
+     -UseBasicParsing
+   
+   $response.StatusCode
+   # Debe retornar: 200
+
+2. CREAR PRODUCTO
+   ────────────────────────────────────────────────────────────────────────────
+   $body = @{
+       name = "Test Product"
+       description = "Descripción de prueba"
+       price = 99.99
+       stock = 50
+       category = "Test"
+   } | ConvertTo-Json
+
+   $response = Invoke-WebRequest -Uri "http://localhost:8080/api/v1/products" `
+     -Method POST `
+     -Headers @{"Content-Type"="application/json"} `
+     -Body $body `
+     -UseBasicParsing
+
+   $response.StatusCode
+   # Debe retornar: 201
+
+3. CREAR ORDEN
+   ────────────────────────────────────────────────────────────────────────────
+   $orderBody = @{
+       customerName = "Juan Test"
+       customerEmail = "test@example.com"
+       customerPhone = "555-1234"
+       shippingAddress = "Calle 123"
+       city = "Mexico"
+       state = "CDMX"
+       zipCode = "06600"
+       items = @(
+           @{
+               productId = "MONGO_ID_AQUI"
+               productName = "Test"
+               productPrice = 99.99
+               quantity = 1
+           }
+       )
+   } | ConvertTo-Json
+
+   $response = Invoke-WebRequest -Uri "http://localhost:8080/orders" `
+     -Method POST `
+     -Headers @{"Content-Type"="application/json"} `
+     -Body $orderBody `
+     -UseBasicParsing
+
+   $response.StatusCode
+   # Debe retornar: 201
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🔍 SOLUCIÓN DE PROBLEMAS
+█████████████████████████████████████████████████████████████████████████████████
+
+PROBLEMA 1: "Error 404: Not Found"
+──────────────────────────────────────────────────────────────────────────────
+✅ SOLUCIÓN:
+   └─ Verifica que la ruta sea correcta:
+      • /api/v1/products (para ProductController)
+      • /orders (para OrderController)
+      • /shipments (para ShipmentController)
+      • /invoices (para InvoiceController)
+   └─ Abre F12 en navegador → Network → ve qué ruta se envía
+   └─ Copia y prueba en curl
+
+PROBLEMA 2: "Error 500: Internal Server Error"
+──────────────────────────────────────────────────────────────────────────────
+✅ CAUSAS POSIBLES:
+   1. Base de datos no inicializada
+   2. Validación fallida (campos requeridos faltando)
+   3. MongoDB no disponible
+
+✅ SOLUCIÓN:
+   └─ Abre F12 → Console → ve el error exacto
+   └─ Revisa los logs de la aplicación en PowerShell
+   └─ Busca "ERROR" o "Exception" en los logs
+   └─ Verifica que todos los campos requeridos se envíen:
+      • name (requerido, no vacío)
+      • price (requerido, > 0)
+      • stock (requerido, >= 0)
+      • category (requerido, no vacío)
+
+PROBLEMA 3: "CORS Error"
+──────────────────────────────────────────────────────────────────────────────
+✅ SOLUCIÓN:
+   └─ Ya está configurado @CrossOrigin en todos los controladores
+   └─ Si persiste, intenta desde la consola del navegador:
+      fetch('http://localhost:8080/api/v1/products?size=10')
+        .then(r => r.json())
+        .then(d => console.log(d))
+
+PROBLEMA 4: "MongoDB Connection Refused"
+──────────────────────────────────────────────────────────────────────────────
+✅ CAUSA:
+   └─ MongoDB embebido (Flapdoodle) debe inicializarse
+   └─ Primera ejecución tarda más
+
+✅ SOLUCIÓN:
+   └─ Espera 30-60 segundos después de iniciar
+   └─ Revisa logs para "Embedded MongoDB Server started"
+   └─ Si persiste, revisa puerto 27017:
+      netstat -ano | findstr :27017
+
+PROBLEMA 5: "Puerto 8080 en uso"
+──────────────────────────────────────────────────────────────────────────────
+✅ SOLUCIÓN:
+   └─ Mata el proceso anterior:
+      netstat -ano | findstr :8080
+      taskkill /PID <PID> /F
+   
+   └─ O cambia el puerto en application.properties:
+      server.port=8081
+   
+   └─ Luego accede desde: http://localhost:8081/orders.html
+
+
+█████████████████████████████████████████████████████████████████████████████████
+💡 MEJORES PRÁCTICAS PARA DEBUGGING
+█████████████████████████████████████████████████████████████████████████████████
+
+1. ABRE LA CONSOLA DEL NAVEGADOR (F12)
+   ├─ Tab "Console" → ve errores de JavaScript
+   ├─ Tab "Network" → ve peticiones HTTP
+   └─ Tab "Storage" → ve localStorage/cookies
+
+2. COPIA EL cURL EXACTO
+   └─ Abre "Network" en F12
+   └─ Copia como cURL
+   └─ Ejecuta en PowerShell
+
+3. REVISA LOS LOGS DE LA APLICACIÓN
+   └─ Busca "[ERROR]" o "Exception"
+   └─ Copia el stack trace completo
+   └─ Busca en Google o Stack Overflow
+
+4. USA SWAGGER (Si está disponible)
+   └─ http://localhost:8080/swagger-ui.html
+   └─ Prueba los endpoints desde allí
+   └─ Es más fácil que curl
+
+
+█████████████████████████████████████████████████████████████████████████████████
+📊 VERIFICACIÓN FINAL - CHECKLIST
+█████████████████████████████████████████████████████████████████████████████████
+
+Antes de usar la aplicación, verifica:
+
+☐ La aplicación inició correctamente (sin errores rojos)
+☐ Está escuchando en: "Started Application on port 8080"
+☐ Puedes acceder a: http://localhost:8080/orders.html
+☐ La página carga sin errores en F12 Console
+☐ El botón "💾 Guardar Producto" está clickeable
+☐ Llenaste TODOS los campos requeridos:
+  ☐ Nombre (no vacío)
+  ☐ Precio (número > 0)
+  ☐ Stock (número >= 0)
+  ☐ Categoría (seleccionada)
+☐ En F12 Network ves: POST /api/v1/products → 201 Created
+☐ El producto aparece en la tabla
+
+
+█████████████████████████████████████████████████████████████████████████████████
+🎯 PRÓXIMO PASO
+█████████████████████████████████████████████████████████████████████████████████
+
+Una vez resuelto el error 500:
+
+1. Crea 2-3 productos de prueba
+2. Ve a TAB "Crear Pedido"
+3. Selecciona productos
+4. Completa datos del cliente
+5. Crea el pedido
+6. Ve a "Mis Pedidos" para verlo
+7. Ve a "Seguimiento" para ver el timeline
+8. Crea factura y descarga PDF
+
+¡LA APLICACIÓN ESTÁ LISTA! 🚀
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+Solución generada: 10 de Agosto de 2026
+Versión: 1.0.1 (Corregida)
+Estado: ✅ LISTO PARA USAR

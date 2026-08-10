@@ -1,0 +1,50 @@
+/* ============================================================
+ * Legacy Teradata BTEQ \u2014 daily sales load
+ * Source : staging file dropped by source system at /mnt/td/landing/sales_YYYYMMDD.dat
+ * Target : ENTERPRISE_DW.SALES_FACT
+ * Schedule: daily 02:00 via cron (legacy etl-server-01)
+ * ============================================================ */
+
+.LOGON tdprod/etl_user,${TD_PASSWORD};
+
+.SET ERRORLEVEL  3807, 3803 SEVERITY 0;
+
+DATABASE ENTERPRISE_DW;
+
+/* 1. Build today's staging table from positional flat file */
+CREATE MULTISET TABLE ENTERPRISE_DW.SALES_STG_${LOAD_DATE} AS ENTERPRISE_DW.SALES_FACT WITH NO DATA;
+
+.IMPORT VARTEXT '|' FILE = /mnt/td/landing/sales_${LOAD_DATE}.dat;
+
+.QUIET ON
+.REPEAT *
+USING (sale_id BIGINT, customer_id INTEGER, product_id INTEGER, store_id INTEGER,
+       sale_date DATE, sale_ts TIMESTAMP(0), quantity DECIMAL(10,2),
+       unit_price DECIMAL(12,4), discount_pct DECIMAL(5,4),
+       tax_amount DECIMAL(12,4), total_amount DECIMAL(14,4),
+       currency_code CHAR(3), channel VARCHAR(20))
+INSERT INTO ENTERPRISE_DW.SALES_STG_${LOAD_DATE}
+VALUES (:sale_id, :customer_id, :product_id, :store_id,
+        :sale_date, :sale_ts, :quantity,
+        :unit_price, :discount_pct,
+        :tax_amount, :total_amount,
+        :currency_code, :channel,
+        CURRENT_TIMESTAMP(0));
+.QUIET OFF
+
+/* 2. Reject rows whose customer is not in the dimension */
+DELETE FROM ENTERPRISE_DW.SALES_STG_${LOAD_DATE}
+WHERE customer_id NOT IN (SELECT customer_id FROM ENTERPRISE_DW.CUSTOMER_DIM);
+
+/* 3. Merge into the fact table */
+INSERT INTO ENTERPRISE_DW.SALES_FACT
+SELECT * FROM ENTERPRISE_DW.SALES_STG_${LOAD_DATE};
+
+/* 4. Drop staging */
+DROP TABLE ENTERPRISE_DW.SALES_STG_${LOAD_DATE};
+
+/* 5. Refresh stats on the partition that was just loaded */
+COLLECT STATISTICS COLUMN (SALE_DATE) ON ENTERPRISE_DW.SALES_FACT;
+
+.LOGOFF;
+.QUIT;

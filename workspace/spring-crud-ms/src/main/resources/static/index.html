@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Productos - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #0066cc;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 5px rgba(0, 102, 204, 0.3);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #0052a3;
+        }
+
+        .btn-secondary {
+            background: #666;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
+        .btn-danger {
+            background: #cc0000;
+        }
+
+        .btn-danger:hover {
+            background: #990000;
+        }
+
+        .btn-edit {
+            background: #009900;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+
+        .btn-edit:hover {
+            background: #007700;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        button.full-width {
+            width: 100%;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: #f0f0f0;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #ddd;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .price {
+            color: #009900;
+            font-weight: bold;
+        }
+
+        .stock {
+            font-weight: bold;
+        }
+
+        .stock.low {
+            color: #cc0000;
+        }
+
+        .stock.medium {
+            color: #ff9900;
+        }
+
+        .stock.high {
+            color: #009900;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0066cc;
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #0066cc;
+        }
+
+        .close-btn {
+            font-size: 28px;
+            font-weight: bold;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .modal-body {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .modal-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .modal-field strong {
+            color: #0066cc;
+            min-width: 100px;
+        }
+
+        .modal-field span {
+            color: #333;
+            word-break: break-word;
+            max-width: 60%;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+
+        .btn-close-modal {
+            background: #666;
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-close-modal:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Gestor de Productos - CRUD Dashboard</h1>
+
+        <div id="successMessage" class="message success"></div>
+        <div id="errorMessage" class="message error"></div>
+        <div id="infoMessage" class="message info"></div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Total Productos</div>
+                <div class="stat-value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Stock Total</div>
+                <div class="stat-value" id="totalStock">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Valor Total</div>
+                <div class="stat-value" id="totalValue">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Servidor</div>
+                <div class="stat-value" id="serverStatus" style="font-size: 14px;">⏳</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2>➕ Crear / Editar Producto</h2>
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="productName">Nombre *</label>
+                        <input type="text" id="productName" required maxlength="100" placeholder="Ej: Laptop Dell">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productDescription">Descripción</label>
+                        <textarea id="productDescription" maxlength="500" placeholder="Descripción del producto..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productPrice">Precio ($) *</label>
+                        <input type="number" id="productPrice" required step="0.01" min="0" placeholder="1299.99">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productStock">Stock *</label>
+                        <input type="number" id="productStock" required min="0" step="1" placeholder="5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="productCategory">Categoría *</label>
+                        <select id="productCategory" required>
+                            <option value="">-- Selecciona --</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Books">Books</option>
+                            <option value="Home">Home</option>
+                            <option value="Sports">Sports</option>
+                        </select>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="full-width">💾 Guardar</button>
+                        <button type="reset" class="btn-secondary full-width">🔄 Limpiar</button>
+                    </div>
+
+                    <input type="hidden" id="productId">
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>ℹ️ Información</h2>
+                <div style="line-height: 1.8;">
+                    <p><strong>Estado Servidor:</strong> <span id="serverInfo">Verificando...</span></p>
+                    <p><strong>API Endpoint:</strong></p>
+                    <code style="background: #f5f5f5; padding: 8px; display: block; border-radius: 4px;">
+                        http://localhost:8080/api/v1/products
+                    </code>
+                    <p style="margin-top: 15px;"><strong>Última actualización:</strong></p>
+                    <span id="lastUpdate" style="color: #0066cc;">--:--:--</span>
+                </div>
+                <button onclick="loadProducts()" class="full-width" style="margin-top: 15px;">🔄 Refrescar Lista</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Lista de Productos</h2>
+            <div id="productsContainer">
+                <div class="empty">📭 No hay productos. ¡Crea uno!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+         const API_BASE = 'http://localhost:8080/api/v1/products';
+         const HEALTH_API = 'http://localhost:8080/api/v1/health';
+         let deleteProductId = null;
+
+         // Inicializar
+         document.addEventListener('DOMContentLoaded', function() {
+             console.log('🚀 Iniciando aplicación...');
+             console.log('API Base:', API_BASE);
+             checkServer();
+             loadProducts();
+             setInterval(() => {
+                 updateStats();
+                 checkServer();
+             }, 5000);
+         });
+
+         // Verificar servidor
+         async function checkServer() {
+             try {
+                 // Primero intenta el health check
+                 const healthResponse = await fetch(HEALTH_API);
+                 if (healthResponse.ok) {
+                     console.log('✅ Server health check OK');
+                     document.getElementById('serverStatus').textContent = '✅';
+                     document.getElementById('serverInfo').textContent = '✅ Online';
+                     return;
+                 }
+             } catch (e) {
+                 console.log('Health check falló, intentando API directa...');
+             }
+             
+             try {
+                 const response = await fetch(API_BASE);
+                 console.log('✅ API check OK, status:', response.status);
+                 document.getElementById('serverStatus').textContent = '✅';
+                 document.getElementById('serverInfo').textContent = '✅ Online';
+             } catch (error) {
+                 console.error('❌ Servidor offline:', error);
+                 document.getElementById('serverStatus').textContent = '❌';
+                 document.getElementById('serverInfo').textContent = '❌ Offline';
+             }
+         }
+
+         // Cargar productos
+         async function loadProducts() {
+             try {
+                 console.log('📥 Cargando productos...');
+                 const response = await fetch(API_BASE);
+                 
+                 if (!response.ok) {
+                     console.error('❌ Error HTTP:', response.status, response.statusText);
+                     throw new Error(`HTTP ${response.status}`);
+                 }
+                 
+                 const data = await response.json();
+                 console.log('✅ Datos recibidos:', data);
+                 
+                 const products = data.content || data || [];
+                 console.log('📊 Total productos:', products.length);
+
+                 if (products.length === 0) {
+                     document.getElementById('productsContainer').innerHTML = '<div class="empty">📭 No hay productos. ¡Crea uno!</div>';
+                 } else {
+                     renderTable(products);
+                 }
+                 
+                 updateStats(products);
+                 updateTime();
+             } catch (error) {
+                 console.error('❌ Error al cargar productos:', error);
+                 showError('❌ Error al cargar productos: ' + error.message);
+             }
+         }
+
+         // Renderizar tabla
+         function renderTable(products) {
+             let html = '<table><thead><tr><th>Nombre</th><th>Descripción</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr></thead><tbody>';
+             
+             products.forEach(p => {
+                 const stockClass = p.stock > 20 ? 'high' : p.stock > 5 ? 'medium' : 'low';
+                 html += `
+                     <tr>
+                         <td><strong>${escapeHtml(p.name)}</strong></td>
+                         <td>${escapeHtml(p.description || 'N/A')}</td>
+                         <td class="price">$${p.price.toFixed(2)}</td>
+                         <td class="stock ${stockClass}">${p.stock}</td>
+                         <td>${p.category}</td>
+                         <td>
+                             <div class="action-buttons">
+                                 <button class="btn-edit" onclick="viewProduct('${p.id}')">👁️ Ver</button>
+                                 <button class="btn-edit" onclick="editProduct('${p.id}')">✏️ Editar</button>
+                                 <button class="btn-danger btn-edit" onclick="deleteProduct('${p.id}', '${escapeHtml(p.name)}')">🗑️ Eliminar</button>
+                             </div>
+                         </td>
+                     </tr>
+                 `;
+             });
+             
+             html += '</tbody></table>';
+             document.getElementById('productsContainer').innerHTML = html;
+         }
+
+        // Actualizar estadísticas
+        function updateStats(products) {
+            if (!products) return;
+            
+            const total = products.length;
+            const stock = products.reduce((s, p) => s + p.stock, 0);
+            const value = products.reduce((v, p) => v + (p.price * p.stock), 0);
+            
+            document.getElementById('totalProducts').textContent = total;
+            document.getElementById('totalStock').textContent = stock;
+            document.getElementById('totalValue').textContent = '$' + value.toFixed(2);
+        }
+
+        // Actualizar hora
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('lastUpdate').textContent = now.toLocaleTimeString();
+        }
+
+         // Crear/Actualizar
+         document.getElementById('productForm').addEventListener('submit', async (e) => {
+             e.preventDefault();
+
+             const id = document.getElementById('productId').value;
+             const product = {
+                 name: document.getElementById('productName').value.trim(),
+                 description: document.getElementById('productDescription').value.trim(),
+                 price: parseFloat(document.getElementById('productPrice').value),
+                 stock: parseInt(document.getElementById('productStock').value),
+                 category: document.getElementById('productCategory').value
+             };
+
+             console.log('📝 Datos del formulario:', product);
+
+             // Validación del lado del cliente
+             if (!product.name) {
+                 console.warn('⚠️ Validación: Nombre requerido');
+                 showError('❌ El nombre es requerido');
+                 return;
+             }
+             if (product.name.length > 100) {
+                 console.warn('⚠️ Validación: Nombre muy largo');
+                 showError('❌ El nombre no puede exceder 100 caracteres');
+                 return;
+             }
+             if (isNaN(product.price) || product.price < 0) {
+                 console.warn('⚠️ Validación: Precio inválido');
+                 showError('❌ El precio no puede ser negativo');
+                 return;
+             }
+             if (isNaN(product.stock) || product.stock < 0) {
+                 console.warn('⚠️ Validación: Stock inválido');
+                 showError('❌ El stock no puede ser negativo');
+                 return;
+             }
+             if (!product.category) {
+                 console.warn('⚠️ Validación: Categoría requerida');
+                 showError('❌ La categoría es requerida');
+                 return;
+             }
+             if (product.description.length > 500) {
+                 console.warn('⚠️ Validación: Descripción muy larga');
+                 showError('❌ La descripción no puede exceder 500 caracteres');
+                 return;
+             }
+
+             try {
+                 const method = id ? 'PUT' : 'POST';
+                 const url = id ? `${API_BASE}/${id}` : API_BASE;
+                 
+                 console.log(`🔄 Enviando ${method} a: ${url}`);
+                 console.log('📦 Body:', product);
+
+                 const response = await fetch(url, {
+                     method: method,
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify(product)
+                 });
+
+                 console.log(`📊 Response status: ${response.status}`);
+
+                 if (!response.ok) {
+                     let errorData = {};
+                     try {
+                         errorData = await response.json();
+                     } catch (e) {
+                         console.log('No se pudo parsear error JSON');
+                     }
+                     const errorMessage = errorData.message || `HTTP ${response.status} - ${response.statusText}`;
+                     console.error('❌ API Error:', errorData);
+                     throw new Error(errorMessage);
+                 }
+
+                 const responseData = await response.json();
+                 console.log('✅ Respuesta exitosa:', responseData);
+
+                 showSuccess(id ? '✅ Producto actualizado correctamente' : '✅ Producto creado correctamente');
+                 document.getElementById('productForm').reset();
+                 document.getElementById('productId').value = '';
+                 await new Promise(r => setTimeout(r, 500));
+                 loadProducts();
+             } catch (error) {
+                 console.error('❌ Error completo:', error);
+                 console.error('Stack:', error.stack);
+                 showError(`❌ Error: ${error.message}`);
+             }
+         });
+
+        // Editar
+        async function editProduct(id) {
+            try {
+                const response = await fetch(`${API_BASE}/${id}`);
+                if (!response.ok) throw new Error('Error');
+
+                const p = await response.json();
+                document.getElementById('productId').value = p.id;
+                document.getElementById('productName').value = p.name;
+                document.getElementById('productDescription').value = p.description || '';
+                document.getElementById('productPrice').value = p.price;
+                document.getElementById('productStock').value = p.stock;
+                document.getElementById('productCategory').value = p.category;
+                
+                document.querySelector('h2').scrollIntoView();
+            } catch (error) {
+                showError('❌ Error al cargar producto');
+            }
+        }
+
+        // Eliminar
+        async function deleteProduct(id, name) {
+            if (confirm(`¿Eliminar "${name}"?`)) {
+                try {
+                    const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error('Error');
+
+                    showSuccess('✅ Eliminado');
+                    loadProducts();
+                } catch (error) {
+                    showError('❌ Error al eliminar');
+                }
+            }
+        }
+
+        // Mensajes
+        function showSuccess(msg) {
+            const el = document.getElementById('successMessage');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMessage');
+            el.textContent = msg;
+            el.classList.add('show');
+            setTimeout(() => el.classList.remove('show'), 4000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Ver detalles del producto
+        async function viewProduct(id) {
+            try {
+                const response = await fetch(`${API_BASE}/${id}`);
+                if (!response.ok) throw new Error('Producto no encontrado');
+
+                const product = await response.json();
+                
+                // Crear contenido del modal
+                let detailsHtml = `
+                    <div class="modal-field">
+                        <strong>ID:</strong>
+                        <span>${escapeHtml(product.id)}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Nombre:</strong>
+                        <span>${escapeHtml(product.name)}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Descripción:</strong>
+                        <span>${escapeHtml(product.description || 'N/A')}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Precio:</strong>
+                        <span>$${product.price.toFixed(2)}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Stock:</strong>
+                        <span>${product.stock}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Categoría:</strong>
+                        <span>${escapeHtml(product.category)}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Creado:</strong>
+                        <span>${new Date(product.createdAt).toLocaleString()}</span>
+                    </div>
+                    <div class="modal-field">
+                        <strong>Actualizado:</strong>
+                        <span>${new Date(product.updatedAt).toLocaleString()}</span>
+                    </div>
+                `;
+
+                // Actualizar el modal
+                document.getElementById('modalBodyContent').innerHTML = detailsHtml;
+                document.getElementById('productModal').classList.add('show');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('❌ Error al cargar detalles del producto');
+            }
+        }
+
+        // Cerrar modal
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('show');
+        }
+
+        // Cerrar modal si se hace clic fuera
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('productModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    </script>
+
+    <!-- Modal para ver detalles -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👁️ Detalles del Producto</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn-close-modal" onclick="closeModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

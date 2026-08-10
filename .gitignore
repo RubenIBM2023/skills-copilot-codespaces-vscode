@@ -1,0 +1,106 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+opencode.json
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.cache/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OpenCode cache (optional, remove if you want to share sessions)
+.opencode/cache/
+
+# OpenCode runtime state (sessions, storage, telemetry)
+.opencode/sessions/
+.opencode/storage/
+.opencode/state/
+.opencode/logs/
+
+# OPF run-dir session cache — volatile, regenerated each session
+.opencode/run-dir.current
+
+# Python — virtual environments
+.venv/
+venv/
+env/
+ENV/
+infraestructura_ia/.venv/
+
+# Python — bytecode & compiled extensions
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python — build & distribution artifacts
+*.egg-info/
+*.egg
+.eggs/
+pip-wheel-metadata/
+
+# Python — test & type-check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# Python — tooling state
+.python-version
+
+# Lock files — each child project regenerates its own
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# OPF swarm run logs — local-only by default; commit explicitly when auditing.
+# Keep the directory present via .gitkeep so the layout is preserved.
+runs/*
+!runs/.gitkeep

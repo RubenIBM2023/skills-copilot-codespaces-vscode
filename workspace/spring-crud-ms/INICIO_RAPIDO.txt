@@ -1,0 +1,174 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                    🎯 INICIO RÁPIDO - 3 PASOS                           ║
+║                                                                          ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+
+PASO 1️⃣  - COMPILA (Primera vez - ~60 segundos)
+════════════════════════════════════════════════════════════════════════
+
+Abre PowerShell y ejecuta:
+
+  cd "C:\Nueva carpeta\agentic-sdlc-sdd-arch-opencode-main\workspace\spring-crud-ms"
+  mvn clean package -q
+
+Espera a que termine. Verás:
+  ✅ BUILD SUCCESS
+
+
+PASO 2️⃣  - INICIA LA APLICACIÓN
+════════════════════════════════════════════════════════════════════════
+
+Opción A (Recomendado - se abre el navegador automáticamente):
+
+  .\INICIA_APLICACION.ps1
+
+O manualmente:
+
+  java -jar target/spring-crud-ms-1.0.0-SNAPSHOT.jar
+
+Espera a ver:
+
+  ✅ Tomcat started on port(s): 8080 (http)
+  ✅ SpringCrudMsApplication started in X.XXX seconds
+
+
+PASO 3️⃣  - ABRE EN EL NAVEGADOR
+════════════════════════════════════════════════════════════════════════
+
+http://localhost:8080
+
+¡Ya estás listo para hacer pruebas! 🎉
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+¿QUÉ PUEDES HACER AHORA?
+════════════════════════════════════════════════════════════════════════
+
+✨ En la Interfaz Gráfica:
+
+  1. ➕ CREAR PRODUCTO
+     • Rellena el formulario
+     • Haz clic en "Guardar"
+     • Aparece en la tabla
+
+  2. 📋 VER LISTA
+     • Se actualiza cada 5 segundos
+     • Muestra todos tus productos
+
+  3. ✏️ EDITAR PRODUCTO
+     • Haz clic en "Editar"
+     • Modifica los datos
+     • Haz clic en "Guardar"
+
+  4. 🗑️ ELIMINAR PRODUCTO
+     • Haz clic en "Eliminar"
+     • Confirma la acción
+
+  5. 👁️ VER DETALLES
+     • Haz clic en "Ver"
+     • Se muestra toda la información
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+EJEMPLO DE PRODUCTO PARA CREAR
+════════════════════════════════════════════════════════════════════════
+
+Nombre:        iPhone 15 Pro
+Descripción:   Smartphone con pantalla AMOLED
+Precio:        999.99
+Stock:         25
+Categoría:     Electronics
+
+👉 Haz clic en "Guardar" y verás que aparece en la tabla
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+OTRAS FORMAS DE HACER PRUEBAS
+════════════════════════════════════════════════════════════════════════
+
+🔶 POSTMAN
+  • Importa: Postman_Collection.json
+  • Obtiene pruebas pre-configuradas
+  • Lee: GUIA_PRUEBAS_COMPLETA.md (Sección MÉTODO 2)
+
+🔷 PowerShell / Curl
+  • Ejemplos listos en: PRUEBAS_RAPIDAS.md
+  • Copia, pega y ejecuta
+  
+🔸 Swagger UI
+  • Abre: http://localhost:8080/swagger-ui.html
+  • Prueba cada endpoint directamente
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+DOCUMENTACIÓN DISPONIBLE
+════════════════════════════════════════════════════════════════════════
+
+📖 COMIENZA_AQUI.md
+   → Guía principal de inicio
+
+📖 GUIA_PRUEBAS_COMPLETA.md
+   → Todas las formas de hacer pruebas
+   → Casos detallados
+   → Solución de problemas
+
+📖 PRUEBAS_RAPIDAS.md
+   → Ejemplos con curl
+   → Respuestas esperadas
+
+📖 PRUEBAS_RESUMEN.txt
+   → Este archivo con resumen visual
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+🔗 URLS ÚTILES
+════════════════════════════════════════════════════════════════════════
+
+Aplicación:     http://localhost:8080
+API:            http://localhost:8080/api/v1/products
+Swagger UI:     http://localhost:8080/swagger-ui.html
+OpenAPI JSON:   http://localhost:8080/api-docs
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+⚠️  SI ALGO NO FUNCIONA
+════════════════════════════════════════════════════════════════════════
+
+Puerto 8080 en uso:
+  java -jar target/spring-crud-ms-1.0.0-SNAPSHOT.jar --server.port=8081
+
+No se encuentra el JAR:
+  mvn clean package -q
+
+La GUI no carga:
+  Recarga: Ctrl+F5
+
+MongoDB no conecta:
+  Se usa Flapdoodle (automático)
+
+Más ayuda:
+  Lee: GUIA_PRUEBAS_COMPLETA.md
+
+
+═════════════════════════════════════════════════════════════════════════
+
+
+✅ ¡YA ESTÁ TODO LISTO!
+
+Ejecuta los 3 pasos arriba y comienza las pruebas. 🚀
+
+═════════════════════════════════════════════════════════════════════════

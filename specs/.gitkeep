@@ -1,0 +1,3 @@
+# This directory holds immutable functional specifications, one per requirement.
+# Layout: specs/<REQ_ID>/{SPEC.md, target.json}
+# REQ_ID format: REQ-YYYY-MM-DD-NNN-<slug>

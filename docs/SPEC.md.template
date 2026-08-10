@@ -1,0 +1,92 @@
+# SPEC-XXX: <Short title of the requirement>
+
+> **This file is the single source of truth for the swarm.**
+> Agents read and obey this document. They may not invent requirements not declared here.
+> To change requirements, edit this file first — never modify source code directly.
+>
+> **Location:** `specs/REQ-YYYY-MM-DD-NNN-<slug>/SPEC.md`
+> **Sibling file:** `target.json` declares which project under `workspace/` this SPEC targets.
+
+---
+
+## Motivation
+
+<!--
+Explain WHY this change is needed. Frame the business or technical problem.
+Keep it concise; aim for 3–6 sentences.
+-->
+
+---
+
+## Acceptance Criteria
+
+<!--
+Numbered list of testable conditions that define "done".
+Each item must be objectively verifiable (lint, test, type-check, behavioural assertion).
+-->
+
+1. **<Criterion name>**: <Description>
+2. **<Criterion name>**: <Description>
+3. **Deterministic Verification**: All of the following must pass at 100% before the task is considered complete:
+   - `npm run lint` — zero errors
+   - `npm test` — zero failures
+   - `npx tsc --noEmit` — zero type errors
+
+---
+
+## Data Contracts
+
+<!--
+Document interfaces, types, and environment variables that must remain stable
+or that this change introduces. Be explicit about which contracts are immutable.
+-->
+
+### `<TypeName>` interface
+
+```typescript
+interface ExampleType {
+  field: string;
+}
+```
+
+### Environment variables
+
+```
+EXAMPLE_VAR=/path/to/something
+```
+
+---
+
+## Target Project
+
+This requirement targets the project declared in `target.json`:
+
+```json
+{ "project": "<project-id>" }
+```
+
+The project root resolves to `workspace/<project-id>/`. All path references below are
+**relative to the project root**, not the repository root.
+
+---
+
+## Files in Scope
+
+| File (project-relative) | Jurisdiction | Transformation |
+|-------------------------|-------------|----------------|
+| `src/path/to/file.ts` | Worker A | <Precise mechanical description of what to change> |
+
+## Files Out of Scope (read-only for all agents)
+
+- `specs/REQ-.../SPEC.md` — this file; immutable contract
+- `AGENTS.md` — project context; do not modify
+- `.env`, `.env.*` — secrets; never touch
+- `runs/**` — append-only swarm history; never modify
+
+---
+
+## Template Usage
+
+> Replace the content above with your own project's specification.
+> Keep the same structure: Motivation → Acceptance Criteria → Data Contracts → Target Project → Files in Scope.
+> The swarm orchestrator (`infraestructura_ia/swarm.py`) reads this file verbatim as its seed.
