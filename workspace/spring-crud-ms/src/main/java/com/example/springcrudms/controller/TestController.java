@@ -9,7 +9,7 @@ import java.util.Map;
  * Controlador para diagnóstico y testing
  */
 @RestController
-@RequestMapping("/api/test")
+@RequestMapping("/test")
 @CrossOrigin(
     origins = {"http://localhost:8080", "http://127.0.0.1:8080", "http://localhost"},
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.OPTIONS},

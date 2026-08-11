@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/products")
+@RequestMapping("/products")
 @CrossOrigin(
     origins = {"http://localhost:8080", "http://127.0.0.1:8080", "http://localhost"},
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT,
