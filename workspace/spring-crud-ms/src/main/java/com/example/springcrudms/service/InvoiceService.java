@@ -9,6 +9,7 @@ import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.ByteArrayOutputStream;
@@ -32,7 +33,7 @@ public class InvoiceService {
 
     public InvoiceService(InvoiceRepository invoiceRepository,
                          OrderRepository orderRepository,
-                         RabbitTemplate rabbitTemplate) {
+                         @Autowired(required = false) RabbitTemplate rabbitTemplate) {
         this.invoiceRepository = invoiceRepository;
         this.orderRepository = orderRepository;
         this.rabbitTemplate = rabbitTemplate;
@@ -79,12 +80,14 @@ public class InvoiceService {
 
         // Publicar evento (opcional - no debe fallar)
         try {
-            rabbitTemplate.convertAndSend(
-                "invoice.exchange",
-                "invoice.created",
-                new InvoiceEvent(savedInvoice.getId(), savedInvoice.getInvoiceNumber(), InvoiceStatus.DRAFT)
-            );
-            System.out.println("✓ Evento de factura publicado");
+            if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(
+                    "invoice.exchange",
+                    "invoice.created",
+                    new InvoiceEvent(savedInvoice.getId(), savedInvoice.getInvoiceNumber(), InvoiceStatus.DRAFT)
+                );
+                System.out.println("✓ Evento de factura publicado");
+            }
         } catch (Exception e) {
             System.err.println("⚠ Advertencia: No se pudo publicar evento de factura: " + e.getMessage());
         }

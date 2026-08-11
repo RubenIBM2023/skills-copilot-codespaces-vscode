@@ -7,6 +7,7 @@ import com.example.springcrudms.model.*;
 import com.example.springcrudms.repository.OrderRepository;
 import com.example.springcrudms.repository.OrderItemRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,7 +32,7 @@ public class OrderService {
                         ProductService productService,
                         StockService stockService,
                         ShipmentService shipmentService,
-                        RabbitTemplate rabbitTemplate) {
+                        @Autowired(required = false) RabbitTemplate rabbitTemplate) {
         this.orderRepository = orderRepository;
         this.orderItemRepository = orderItemRepository;
         this.productService = productService;
@@ -128,12 +129,14 @@ public class OrderService {
 
         // Publicar evento (OPCIONAL - no debe fallar la orden)
         try {
-            rabbitTemplate.convertAndSend(
-                "order.exchange",
-                "order.created",
-                new OrderEvent(savedOrder.getId(), savedOrder.getOrderNumber(), OrderStatus.PENDING)
-            );
-            System.out.println("✓ Evento publicado");
+            if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(
+                    "order.exchange",
+                    "order.created",
+                    new OrderEvent(savedOrder.getId(), savedOrder.getOrderNumber(), OrderStatus.PENDING)
+                );
+                System.out.println("✓ Evento publicado");
+            }
         } catch (Exception e) {
             System.err.println("⚠ Advertencia: No se pudo publicar evento: " + e.getMessage());
         }

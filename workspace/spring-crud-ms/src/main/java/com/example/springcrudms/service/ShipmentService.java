@@ -8,6 +8,7 @@ import com.example.springcrudms.model.OrderStatus;
 import com.example.springcrudms.repository.ShipmentRepository;
 import com.example.springcrudms.repository.OrderRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -28,7 +29,7 @@ public class ShipmentService {
 
     public ShipmentService(ShipmentRepository shipmentRepository,
                           OrderRepository orderRepository,
-                          RabbitTemplate rabbitTemplate) {
+                          @Autowired(required = false) RabbitTemplate rabbitTemplate) {
         this.shipmentRepository = shipmentRepository;
         this.orderRepository = orderRepository;
         this.rabbitTemplate = rabbitTemplate;
@@ -49,12 +50,18 @@ public class ShipmentService {
         order.setShipment(savedShipment);
         orderRepository.save(order);
 
-        // Publicar evento
-        rabbitTemplate.convertAndSend(
-            "shipment.exchange",
-            "shipment.created",
-            new ShipmentEvent(savedShipment.getId(), savedShipment.getTrackingNumber(), ShipmentStatus.PENDING)
-        );
+        // Publicar evento (opcional - no debe fallar)
+        try {
+            if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(
+                    "shipment.exchange",
+                    "shipment.created",
+                    new ShipmentEvent(savedShipment.getId(), savedShipment.getTrackingNumber(), ShipmentStatus.PENDING)
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("⚠ Advertencia: No se pudo publicar evento de envío: " + e.getMessage());
+        }
 
         return savedShipment;
     }
