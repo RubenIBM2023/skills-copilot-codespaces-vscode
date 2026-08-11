@@ -198,3 +198,36 @@ The project root resolves to `workspace/spring-crud-ms/`. All path references be
 - `.env`, `.env.*` — secrets; never touch
 - `runs/**` — append-only swarm history; never modify
 - `workspace/legacy-teradata-migration/**` — separate project; out of scope
+
+---
+
+## 🔒 Version Lock: v1.0.0-stable
+
+**Status:** ✅ COMPLETE AND STABLE  
+**Commit:** `15ecbef` + `f3950b4`  
+**Date:** 2026-08-11  
+**GitHub Tag:** `v1.0.0-stable`
+
+### Final Implementation Includes:
+- ✓ All CRUD operations fully implemented
+- ✓ Invoice date mapping (createdAt, updatedAt) 
+- ✓ Statistics dashboard in orders.html
+- ✓ Server health monitoring
+- ✓ All tests passing (17/17)
+- ✓ Checkstyle: 0 violations
+- ✓ Code compilation: SUCCESS
+
+### ⚠️ Important: No Further Changes Without Specification Update
+
+**Future changes to this project must:**
+1. Create a new SPEC file (e.g., `REQ-2026-08-12-001-feature-name`)
+2. Document the requirement in the new SPEC
+3. Create a new worker/architect workflow
+4. Create a new version tag after completion
+
+**To preserve this stable version:**
+- Do not edit source files in `workspace/spring-crud-ms/src/` without a new SPEC
+- All modifications must be tracked in a new requirement
+- This SPEC is frozen as the current baseline
+
+See `workspace/spring-crud-ms/VERSION_STABLE.md` for detailed version information.
