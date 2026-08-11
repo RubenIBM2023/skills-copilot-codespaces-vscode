@@ -36,10 +36,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(
     controllers = ProductController.class,
     excludeAutoConfiguration = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class},
-    excludeFilters = @ComponentScan.Filter(
-        type = FilterType.ASSIGNABLE_TYPE,
-        classes = MongoConfig.class
-    )
+    excludeFilters = {
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = MongoConfig.class
+        ),
+        @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = com.example.springcrudms.config.MongoConfig.class
+        )
+    }
 )
 @Import(GlobalExceptionHandler.class)
 class ProductControllerTest {

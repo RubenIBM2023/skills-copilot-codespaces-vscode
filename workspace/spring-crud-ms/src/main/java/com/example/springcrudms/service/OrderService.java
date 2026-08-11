@@ -3,6 +3,7 @@ package com.example.springcrudms.service;
 import com.example.springcrudms.dto.CreateOrderDTO;
 import com.example.springcrudms.dto.OrderDTO;
 import com.example.springcrudms.dto.OrderItemDTO;
+import com.example.springcrudms.dto.InvoiceDTO;
 import com.example.springcrudms.model.*;
 import com.example.springcrudms.repository.OrderRepository;
 import com.example.springcrudms.repository.OrderItemRepository;
@@ -165,30 +166,123 @@ public class OrderService {
     }
 
     /**
-     * Actualizar estado de la orden.
+     * Actualizar estado de la orden con validación de flujo.
+     * Flujo permitido: PENDING → CONFIRMED → SHIPPED → IN_TRANSIT → DELIVERED
+     * CANCELLED puede ser desde cualquier estado.
      */
     public OrderDTO updateOrderStatus(Long id, OrderStatus newStatus) {
         Order order = orderRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Orden no encontrada con ID: " + id));
 
-        OrderStatus oldStatus = order.getStatus();
+        OrderStatus currentStatus = order.getStatus();
+        LocalDateTime now = LocalDateTime.now();
+
+        // Validar transición de estado permitida
+        validateStatusTransition(currentStatus, newStatus);
+
+        // Actualizar el estado
         order.setStatus(newStatus);
-        order.setUpdatedAt(LocalDateTime.now());
+        order.setUpdatedAt(now);
+
+        // Registrar la fecha del nuevo estado
+        switch (newStatus) {
+            case CONFIRMED:
+                order.setConfirmedAt(now);
+                break;
+            case SHIPPED:
+                order.setShippedAt(now);
+                break;
+            case IN_TRANSIT:
+                order.setInTransitAt(now);
+                break;
+            case DELIVERED:
+                order.setDeliveredAt(now);
+                break;
+            case CANCELLED:
+                order.setCancelledAt(now);
+                break;
+            case PENDING:
+                // No hacer nada, ya fue inicializado en crear
+                break;
+        }
 
         Order updatedOrder = orderRepository.save(order);
 
         // Publicar evento de cambio de estado (opcional)
         try {
-            rabbitTemplate.convertAndSend(
-                "order.exchange",
-                "order.status." + newStatus.name().toLowerCase(),
-                new OrderEvent(updatedOrder.getId(), updatedOrder.getOrderNumber(), newStatus)
-            );
+            if (rabbitTemplate != null) {
+                rabbitTemplate.convertAndSend(
+                    "order.exchange",
+                    "order.status." + newStatus.name().toLowerCase(),
+                    new OrderEvent(updatedOrder.getId(), updatedOrder.getOrderNumber(), newStatus)
+                );
+            }
         } catch (Exception e) {
             System.err.println("Advertencia: No se pudo publicar evento: " + e.getMessage());
         }
 
         return mapToDTO(updatedOrder);
+    }
+
+    /**
+     * Validar que la transición de estado sea permitida.
+     */
+    private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
+        // No permitir cambiar a un estado igual
+        if (currentStatus == newStatus) {
+            throw new IllegalStateException(
+                String.format("La orden ya está en estado %s", currentStatus.getDisplayName())
+            );
+        }
+
+        // Si el estado actual es CANCELLED, no permitir cambios
+        if (currentStatus == OrderStatus.CANCELLED) {
+            throw new IllegalStateException(
+                "No se puede cambiar el estado de una orden cancelada"
+            );
+        }
+
+        // Si el estado actual es DELIVERED, no permitir cambios
+        if (currentStatus == OrderStatus.DELIVERED) {
+            throw new IllegalStateException(
+                "No se puede cambiar el estado de una orden entregada"
+            );
+        }
+
+        // CANCELLED se puede hacer desde cualquier estado (excepto DELIVERED y CANCELLED ya validado)
+        if (newStatus == OrderStatus.CANCELLED) {
+            return;
+        }
+
+        // Validar flujo secuencial
+        boolean isValidTransition = false;
+        switch (currentStatus) {
+            case PENDING:
+                isValidTransition = (newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED);
+                break;
+            case CONFIRMED:
+                isValidTransition = (newStatus == OrderStatus.SHIPPED || newStatus == OrderStatus.CANCELLED);
+                break;
+            case SHIPPED:
+                isValidTransition = (newStatus == OrderStatus.IN_TRANSIT || newStatus == OrderStatus.CANCELLED);
+                break;
+            case IN_TRANSIT:
+                isValidTransition = (newStatus == OrderStatus.DELIVERED || newStatus == OrderStatus.CANCELLED);
+                break;
+            case DELIVERED:
+            case CANCELLED:
+                isValidTransition = false; // Ya validado arriba
+                break;
+        }
+
+        if (!isValidTransition) {
+            throw new IllegalStateException(
+                String.format("No se puede cambiar de %s a %s. Transición no permitida.",
+                    currentStatus.getDisplayName(),
+                    newStatus.getDisplayName()
+                )
+            );
+        }
     }
 
     /**
@@ -217,6 +311,11 @@ public class OrderService {
         dto.setCreatedAt(order.getCreatedAt());
         dto.setUpdatedAt(order.getUpdatedAt());
         dto.setInvoiced(order.getInvoiced());
+        dto.setConfirmedAt(order.getConfirmedAt());
+        dto.setShippedAt(order.getShippedAt());
+        dto.setInTransitAt(order.getInTransitAt());
+        dto.setDeliveredAt(order.getDeliveredAt());
+        dto.setCancelledAt(order.getCancelledAt());
         
         // Mapear items
         if (order.getItems() != null && !order.getItems().isEmpty()) {
@@ -231,6 +330,25 @@ public class OrderService {
                 })
                 .collect(Collectors.toList());
             dto.setItems(items);
+        }
+        
+        // Mapear factura si existe
+        if (order.getInvoice() != null) {
+            Invoice invoice = order.getInvoice();
+            InvoiceDTO invoiceDTO = new InvoiceDTO();
+            invoiceDTO.setId(invoice.getId());
+            invoiceDTO.setOrderId(invoice.getOrder().getId());
+            invoiceDTO.setInvoiceNumber(invoice.getInvoiceNumber());
+            invoiceDTO.setTaxId(invoice.getTaxId());
+            invoiceDTO.setSubtotal(invoice.getSubtotal());
+            invoiceDTO.setTaxAmount(invoice.getTaxAmount());
+            invoiceDTO.setTotalAmount(invoice.getTotalAmount());
+            invoiceDTO.setDiscount(invoice.getDiscount());
+            invoiceDTO.setStatus(invoice.getStatus());
+            invoiceDTO.setNotes(invoice.getNotes());
+            invoiceDTO.setCreatedAt(invoice.getCreatedAt());
+            invoiceDTO.setUpdatedAt(invoice.getUpdatedAt());
+            dto.setInvoice(invoiceDTO);
         }
         
         return dto;

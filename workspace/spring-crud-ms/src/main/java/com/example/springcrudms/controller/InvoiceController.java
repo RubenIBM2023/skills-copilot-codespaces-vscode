@@ -17,7 +17,7 @@ import java.util.List;
  * Controlador REST para gestión de facturas.
  */
 @RestController
-@RequestMapping("/invoices")
+@RequestMapping("/api/v1/invoices")
 @CrossOrigin(
     origins = {"http://localhost:8080", "http://127.0.0.1:8080", "http://localhost"},
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},

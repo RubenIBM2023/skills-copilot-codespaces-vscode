@@ -25,6 +25,11 @@ public class OrderDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Boolean invoiced;
+    private LocalDateTime confirmedAt;
+    private LocalDateTime shippedAt;
+    private LocalDateTime inTransitAt;
+    private LocalDateTime deliveredAt;
+    private LocalDateTime cancelledAt;
 
     public OrderDTO() {}
 
@@ -163,5 +168,45 @@ public class OrderDTO {
 
     public void setInvoiced(Boolean invoiced) {
         this.invoiced = invoiced;
+    }
+
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(LocalDateTime confirmedAt) {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public LocalDateTime getShippedAt() {
+        return shippedAt;
+    }
+
+    public void setShippedAt(LocalDateTime shippedAt) {
+        this.shippedAt = shippedAt;
+    }
+
+    public LocalDateTime getInTransitAt() {
+        return inTransitAt;
+    }
+
+    public void setInTransitAt(LocalDateTime inTransitAt) {
+        this.inTransitAt = inTransitAt;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 }

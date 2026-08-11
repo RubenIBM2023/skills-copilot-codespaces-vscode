@@ -386,6 +386,15 @@
             color: #667eea;
         }
 
+        .btn-secondary {
+            background: #666;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+
         .close-btn {
             font-size: 28px;
             font-weight: bold;
@@ -399,6 +408,33 @@
         .close-btn:hover {
             color: #000;
         }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: white;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
@@ -406,6 +442,25 @@
         <div class="header">
             <h1>📦 Sistema de Seguimiento de Pedidos</h1>
             <p>Gestiona tus productos, crea pedidos y realiza seguimiento en tiempo real</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">Total Productos</div>
+                <div class="stat-value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Stock Total</div>
+                <div class="stat-value" id="totalStock">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Valor Total</div>
+                <div class="stat-value" id="totalValue">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Servidor</div>
+                <div class="stat-value" id="serverStatus" style="font-size: 14px;">⏳</div>
+            </div>
         </div>
 
         <div class="tabs">
@@ -457,7 +512,11 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn-primary">💾 Guardar Producto</button>
+                    <input type="hidden" id="productId">
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button type="submit" class="btn-primary">💾 Guardar Producto</button>
+                        <button type="reset" class="btn-secondary" onclick="clearProductForm()">🔄 Limpiar</button>
+                    </div>
                 </form>
             </div>
 
@@ -569,11 +628,24 @@
         </div>
     </div>
 
+    <!-- Modal para detalles de producto -->
+    <div id="productDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>👁️ Detalles del Producto</h2>
+                <button class="close-btn" onclick="closeModal('productDetailsModal')">&times;</button>
+            </div>
+            <div id="productDetailsContent"></div>
+            <button type="button" class="btn-primary" onclick="closeModal('productDetailsModal')" style="margin-top: 20px; width: 100%;">Cerrar</button>
+        </div>
+    </div>
+
     <script>
         const API_PRODUCTS = '/api/v1/products';
         const API_ORDERS = '/api/v1/orders';
         const API_SHIPMENTS = '/api/v1/shipments';
         const API_INVOICES = '/api/v1/invoices';
+        const HEALTH_API = '/api/v1/health';
 
         let orderItems = [];
         let selectedProducts = [];
@@ -606,10 +678,49 @@
             }
         }
 
+        // ============ ESTADÍSTICAS ============
+        // Verificar servidor
+        async function checkServer() {
+            try {
+                const response = await fetch(HEALTH_API);
+                if (response.ok) {
+                    document.getElementById('serverStatus').textContent = '✅';
+                    return;
+                }
+            } catch (e) {
+                console.log('Health check falló');
+            }
+            
+            try {
+                const response = await fetch(API_PRODUCTS);
+                if (response.ok) {
+                    document.getElementById('serverStatus').textContent = '✅';
+                } else {
+                    document.getElementById('serverStatus').textContent = '❌';
+                }
+            } catch (error) {
+                document.getElementById('serverStatus').textContent = '❌';
+            }
+        }
+
+        // Actualizar estadísticas
+        function updateStats(products) {
+            if (!products) return;
+            
+            const total = products.length;
+            const stock = products.reduce((s, p) => s + p.stock, 0);
+            const value = products.reduce((v, p) => v + (p.price * p.stock), 0);
+            
+            document.getElementById('totalProducts').textContent = total;
+            document.getElementById('totalStock').textContent = stock;
+            document.getElementById('totalValue').textContent = '$' + value.toFixed(2);
+        }
+
         // ============ PRODUCTOS ============
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const productId = document.getElementById('productId').value;
             const formData = {
                 name: document.getElementById('productName').value,
                 description: document.getElementById('productDescription').value,
@@ -619,15 +730,20 @@
             };
 
             try {
-                const response = await fetch(`${API_PRODUCTS}`, {
-                    method: 'POST',
+                const method = productId ? 'PUT' : 'POST';
+                const url = productId ? `${API_PRODUCTS}/${productId}` : API_PRODUCTS;
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
 
                 if (response.ok) {
-                    showMessage('✅ Producto guardado exitosamente', 'successMessageProducts');
+                    const messageText = productId ? '✅ Producto actualizado exitosamente' : '✅ Producto guardado exitosamente';
+                    showMessage(messageText, 'successMessageProducts');
                     document.getElementById('productForm').reset();
+                    document.getElementById('productId').value = '';
                     loadProducts();
                 } else {
                     showMessage('❌ Error al guardar producto', 'errorMessageProducts');
@@ -637,11 +753,19 @@
             }
         });
 
+        function clearProductForm() {
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+        }
+
         async function loadProducts() {
             try {
                 const response = await fetch(`${API_PRODUCTS}?size=100`);
                 const data = await response.json();
                 const products = data.content || []; // Page response retorna en 'content'
+
+                // Actualizar estadísticas
+                updateStats(products);
 
                 let html = '<table>';
                 html += '<thead><tr><th>Nombre</th><th>Descripción</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Acciones</th></tr></thead>';
@@ -656,8 +780,11 @@
                             <td>$${p.price.toFixed(2)}</td>
                             <td><span class="status-badge ${stockClass}">${p.stock} unidades</span></td>
                             <td>${p.category}</td>
-                            <td>
-                                <button class="btn-info" onclick="addProductToOrder('${p.id}', '${escapeHtml(p.name)}', ${p.price}, ${p.stock})">Agregar</button>
+                            <td style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                <button class="btn-info" onclick="viewProductDetail('${p.id}')" style="background: #2196F3; padding: 8px 12px; font-size: 12px;">👁️ Ver</button>
+                                <button class="btn-info" onclick="editProductDetail('${p.id}')" style="background: #009900; padding: 8px 12px; font-size: 12px;">✏️ Editar</button>
+                                <button class="btn-info" onclick="deleteProductDetail('${p.id}', '${escapeHtml(p.name)}')" style="background: #f44336; padding: 8px 12px; font-size: 12px;">🗑️ Eliminar</button>
+                                <button class="btn-info" onclick="addProductToOrder('${p.id}', '${escapeHtml(p.name)}', ${p.price}, ${p.stock})" style="background: #4caf50; padding: 8px 12px; font-size: 12px;">➕ Agregar</button>
                             </td>
                         </tr>
                     `;
@@ -671,6 +798,71 @@
             } catch (error) {
                 console.error('Error loading products:', error);
                 document.getElementById('productsContainer').innerHTML = '<p style="color: red;">Error al cargar productos</p>';
+            }
+        }
+
+        // Ver detalles del producto
+        async function viewProductDetail(id) {
+            try {
+                const response = await fetch(`${API_PRODUCTS}/${id}`);
+                if (!response.ok) throw new Error('Producto no encontrado');
+
+                const product = await response.json();
+                
+                let detailsHtml = `
+                    <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                        <p><strong>ID:</strong> ${escapeHtml(product.id)}</p>
+                        <p><strong>Nombre:</strong> ${escapeHtml(product.name)}</p>
+                        <p><strong>Descripción:</strong> ${escapeHtml(product.description || 'N/A')}</p>
+                        <p><strong>Precio:</strong> $${product.price.toFixed(2)}</p>
+                        <p><strong>Stock:</strong> ${product.stock}</p>
+                        <p><strong>Categoría:</strong> ${escapeHtml(product.category)}</p>
+                        <p><strong>Creado:</strong> ${new Date(product.createdAt).toLocaleString()}</p>
+                        <p><strong>Actualizado:</strong> ${new Date(product.updatedAt).toLocaleString()}</p>
+                    </div>
+                `;
+
+                document.getElementById('productDetailsContent').innerHTML = detailsHtml;
+                document.getElementById('productDetailsModal').classList.add('show');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('❌ Error al cargar detalles del producto');
+            }
+        }
+
+        // Editar producto
+        async function editProductDetail(id) {
+            try {
+                const response = await fetch(`${API_PRODUCTS}/${id}`);
+                if (!response.ok) throw new Error('Producto no encontrado');
+
+                const p = await response.json();
+                document.getElementById('productId').value = p.id;
+                document.getElementById('productName').value = p.name;
+                document.getElementById('productDescription').value = p.description || '';
+                document.getElementById('productPrice').value = p.price;
+                document.getElementById('productStock').value = p.stock;
+                document.getElementById('productCategory').value = p.category;
+                
+                // Scroll to form
+                document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                alert('❌ Error al cargar producto');
+            }
+        }
+
+        // Eliminar producto
+        async function deleteProductDetail(id, name) {
+            if (confirm(`¿Estás seguro de que deseas eliminar "${name}"?`)) {
+                try {
+                    const response = await fetch(`${API_PRODUCTS}/${id}`, { method: 'DELETE' });
+                    if (!response.ok) throw new Error('Error');
+
+                    showMessage('✅ Producto eliminado exitosamente', 'successMessageProducts');
+                    loadProducts();
+                } catch (error) {
+                    showMessage('❌ Error al eliminar producto', 'errorMessageProducts');
+                }
             }
         }
 
@@ -836,16 +1028,22 @@
                             <p><strong>Dirección:</strong> ${order.shippingAddress}, ${order.city}, ${order.state} ${order.zipCode}</p>
                             <p><strong>Estado:</strong> <span class="status-badge status-${order.status.toLowerCase()}">${order.status}</span></p>
                             <p><strong>Total:</strong> $${order.totalAmount.toFixed(2)}</p>
-                            <p><strong>Fecha:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                            <p><strong>Fecha de creación:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                        </div>
+
+                        <h4>📅 Historial de Estados</h4>
+                        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                            <p><strong>✓ Creado:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                            <p><strong>Confirmado:</strong> ${order.confirmedAt ? new Date(order.confirmedAt).toLocaleString() : '⏳ Pendiente'}</p>
+                            <p><strong>Enviado:</strong> ${order.shippedAt ? new Date(order.shippedAt).toLocaleString() : '⏳ Pendiente'}</p>
+                            <p><strong>En Tránsito:</strong> ${order.inTransitAt ? new Date(order.inTransitAt).toLocaleString() : '⏳ Pendiente'}</p>
+                            <p><strong>Entregado:</strong> ${order.deliveredAt ? new Date(order.deliveredAt).toLocaleString() : '⏳ Pendiente'}</p>
+                            ${order.cancelledAt ? `<p style="color: red;"><strong>Cancelado:</strong> ${new Date(order.cancelledAt).toLocaleString()}</p>` : ''}
                         </div>
 
                         <h4>🛠️ Cambiar Estado del Pedido</h4>
                         <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn-info" onclick="updateOrderStatus(${orderId}, 'CONFIRMED')">✓ Confirmar</button>
-                            <button class="btn-info" onclick="updateOrderStatus(${orderId}, 'SHIPPED')">📦 Enviar</button>
-                            <button class="btn-info" onclick="updateOrderStatus(${orderId}, 'IN_TRANSIT')">🚚 En Tránsito</button>
-                            <button class="btn-success" onclick="updateOrderStatus(${orderId}, 'DELIVERED')">✓ Entregado</button>
-                            <button class="btn-danger" onclick="updateOrderStatus(${orderId}, 'CANCELLED')">✗ Cancelar</button>
+                            ${getAvailableStatusButtons(order.status, orderId)}
                         </div>
 
                         <h4>📦 Productos</h4>
@@ -888,6 +1086,40 @@
             }
         }
 
+        // Obtener botones de estado disponibles según el estado actual
+        function getAvailableStatusButtons(currentStatus, orderId) {
+            let buttons = '';
+            
+            // El botón Cancelar siempre está disponible (excepto si ya está cancelado o entregado)
+            if (currentStatus !== 'CANCELLED' && currentStatus !== 'DELIVERED') {
+                buttons += `<button class="btn-danger" onclick="updateOrderStatus(${orderId}, 'CANCELLED')">✗ Cancelar</button>`;
+            }
+
+            // Flujo secuencial de estados
+            switch(currentStatus) {
+                case 'PENDING':
+                    buttons += `<button class="btn-info" onclick="updateOrderStatus(${orderId}, 'CONFIRMED')">✓ Confirmar</button>`;
+                    break;
+                case 'CONFIRMED':
+                    buttons += `<button class="btn-info" onclick="updateOrderStatus(${orderId}, 'SHIPPED')">📦 Enviar</button>`;
+                    break;
+                case 'SHIPPED':
+                    buttons += `<button class="btn-info" onclick="updateOrderStatus(${orderId}, 'IN_TRANSIT')">🚚 En Tránsito</button>`;
+                    break;
+                case 'IN_TRANSIT':
+                    buttons += `<button class="btn-success" onclick="updateOrderStatus(${orderId}, 'DELIVERED')">✓ Entregado</button>`;
+                    break;
+                case 'DELIVERED':
+                    buttons += `<p style="color: green; font-weight: bold;">✓ Pedido Entregado</p>`;
+                    break;
+                case 'CANCELLED':
+                    buttons += `<p style="color: red; font-weight: bold;">✗ Pedido Cancelado</p>`;
+                    break;
+            }
+
+            return buttons;
+        }
+
         async function updateOrderStatus(orderId, newStatus) {
             if (!confirm(`¿Estás seguro de cambiar el estado a ${newStatus}?`)) {
                 return;
@@ -906,7 +1138,9 @@
                     // Reload detalles
                     showOrderDetails(orderId);
                 } else {
-                    alert('❌ Error al actualizar estado');
+                    const errorData = await response.json();
+                    const errorMessage = errorData.message || `Error al actualizar estado`;
+                    alert(`❌ ${errorMessage}`);
                 }
             } catch (error) {
                 alert('❌ Error: ' + error.message);
@@ -958,12 +1192,38 @@
                     <div class="order-timeline" style="margin-top: 30px;">
             `;
 
+            // Construir timeline basado en las fechas reales del Order
             const timeline = [
-                { step: 'Pedido Creado', date: new Date(order.createdAt), status: 'PENDING', completed: true },
-                { step: 'Confirmado', date: order.shipment?.shippedDate, status: 'CONFIRMED', completed: order.status !== 'PENDING' },
-                { step: 'Enviado', date: order.shipment?.shippedDate, status: 'SHIPPED', completed: ['SHIPPED', 'IN_TRANSIT', 'DELIVERED'].includes(order.status) },
-                { step: 'En Tránsito', date: order.shipment?.estimatedDelivery, status: 'IN_TRANSIT', completed: ['IN_TRANSIT', 'DELIVERED'].includes(order.status) },
-                { step: 'Entregado', date: order.shipment?.deliveredDate, status: 'DELIVERED', completed: order.status === 'DELIVERED' }
+                { 
+                    step: 'Pedido Creado', 
+                    date: new Date(order.createdAt), 
+                    status: 'PENDING', 
+                    completed: true 
+                },
+                { 
+                    step: 'Confirmado', 
+                    date: order.confirmedAt ? new Date(order.confirmedAt) : null, 
+                    status: 'CONFIRMED', 
+                    completed: order.confirmedAt !== null && order.confirmedAt !== undefined
+                },
+                { 
+                    step: 'Enviado', 
+                    date: order.shippedAt ? new Date(order.shippedAt) : null, 
+                    status: 'SHIPPED', 
+                    completed: order.shippedAt !== null && order.shippedAt !== undefined
+                },
+                { 
+                    step: 'En Tránsito', 
+                    date: order.inTransitAt ? new Date(order.inTransitAt) : null, 
+                    status: 'IN_TRANSIT', 
+                    completed: order.inTransitAt !== null && order.inTransitAt !== undefined
+                },
+                { 
+                    step: 'Entregado', 
+                    date: order.deliveredAt ? new Date(order.deliveredAt) : null, 
+                    status: 'DELIVERED', 
+                    completed: order.deliveredAt !== null && order.deliveredAt !== undefined
+                }
             ];
 
             timeline.forEach((item, idx) => {
@@ -974,7 +1234,7 @@
                         ${idx < timeline.length - 1 ? '<div class="timeline-line"></div>' : ''}
                         <div class="timeline-content">
                             <h4>${item.step}</h4>
-                            <p>${item.date ? new Date(item.date).toLocaleString() : 'Pendiente'}</p>
+                            <p>${item.date ? item.date.toLocaleString() : '⏳ Pendiente'}</p>
                         </div>
                     </div>
                 `;
@@ -1067,6 +1327,13 @@
             document.getElementById(modalId).classList.remove('show');
         }
 
+        // Cerrar modales al hacer clic fuera
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('show');
+            }
+        });
+
         function showMessage(message, elementId) {
             const el = document.getElementById(elementId);
             el.textContent = message;
@@ -1080,8 +1347,13 @@
             return text.replace(/[&<>"']/g, m => map[m]);
         }
 
-        // Load products on page load
-        window.addEventListener('load', loadProducts);
+        // Load products and check server on page load
+        window.addEventListener('load', function() {
+            loadProducts();
+            checkServer();
+            // Verificar servidor cada 30 segundos
+            setInterval(checkServer, 30000);
+        });
     </script>
 </body>
 </html>

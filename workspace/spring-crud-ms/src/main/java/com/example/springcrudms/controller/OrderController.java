@@ -16,7 +16,7 @@ import java.util.List;
  * Controlador REST para gestión de pedidos.
  */
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/v1/orders")
 @CrossOrigin(
     origins = {"http://localhost:8080", "http://127.0.0.1:8080", "http://localhost"},
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},

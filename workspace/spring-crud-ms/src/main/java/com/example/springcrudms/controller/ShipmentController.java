@@ -13,7 +13,7 @@ import java.util.List;
  * Controlador REST para gestión de envíos.
  */
 @RestController
-@RequestMapping("/shipments")
+@RequestMapping("/api/v1/shipments")
 @CrossOrigin(
     origins = {"http://localhost:8080", "http://127.0.0.1:8080", "http://localhost"},
     methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},

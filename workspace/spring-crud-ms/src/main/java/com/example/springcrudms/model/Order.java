@@ -62,6 +62,22 @@ public class Order {
     @Column(nullable = false)
     private Boolean invoiced = false;
 
+    // Fechas de cambio de estado
+    @Column
+    private LocalDateTime confirmedAt;
+
+    @Column
+    private LocalDateTime shippedAt;
+
+    @Column
+    private LocalDateTime inTransitAt;
+
+    @Column
+    private LocalDateTime deliveredAt;
+
+    @Column
+    private LocalDateTime cancelledAt;
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -209,6 +225,46 @@ public class Order {
 
     public void setInvoiced(Boolean invoiced) {
         this.invoiced = invoiced;
+    }
+
+    public LocalDateTime getConfirmedAt() {
+        return confirmedAt;
+    }
+
+    public void setConfirmedAt(LocalDateTime confirmedAt) {
+        this.confirmedAt = confirmedAt;
+    }
+
+    public LocalDateTime getShippedAt() {
+        return shippedAt;
+    }
+
+    public void setShippedAt(LocalDateTime shippedAt) {
+        this.shippedAt = shippedAt;
+    }
+
+    public LocalDateTime getInTransitAt() {
+        return inTransitAt;
+    }
+
+    public void setInTransitAt(LocalDateTime inTransitAt) {
+        this.inTransitAt = inTransitAt;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
+    }
+
+    public LocalDateTime getCancelledAt() {
+        return cancelledAt;
+    }
+
+    public void setCancelledAt(LocalDateTime cancelledAt) {
+        this.cancelledAt = cancelledAt;
     }
 
     @Override
